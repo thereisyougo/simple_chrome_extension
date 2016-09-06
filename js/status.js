@@ -1,0 +1,352 @@
+var increCount = (function() {
+  let count = 0;
+  return function() {
+    return String(++count);
+  };
+})();
+
+function httpRequest(url, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", url, true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      callback(xhr);
+    }
+  }
+  xhr.onerror = function() {
+    callback(false);
+  }
+  xhr.send();
+}
+
+function parseXML(data) {
+  var xml;
+  if (!data || typeof data !== "string") {
+    return null;
+  }
+  try {
+    if (window.DOMParser) { // Standard
+      xml = (new window.DOMParser()).parseFromString(data, "text/xml");
+    } else { // IE
+      xml = new window.ActiveXObject("Microsoft.XMLDOM");
+      xml.async = "false";
+      xml.loadXML(data);
+    }
+  } catch (e) {
+    xml = undefined;
+  }
+  if (!xml || !xml.documentElement || xml.getElementsByTagName("parsererror").length) {
+    console.info("Invalid XML: " + data);
+  }
+  return xml;
+};
+
+function createMenu() {
+
+  // A generic onclick callback function.
+  function genericOnClick(info, tab) {
+    console.log("item " + info.menuItemId + " was clicked");
+    console.log("info: " + JSON.stringify(info));
+    console.log("tab: " + JSON.stringify(tab));
+  }
+
+  // Create one test item for each context type.
+  // "all"不包括launcher 且只app可使用"launcher"
+  /*
+  var contexts = ["page", "frame", "selection", "link", "editable", "image", "video", "audio",
+  "browser_action", "page_action"];
+  for (var i = 0; i < contexts.length; i++) {
+    var context = contexts[i];
+    var title = "Test '" + context + "' menu item";
+    var id = chrome.contextMenus.create({ "id": increCount(), "title": title, "contexts": [context] });
+    console.log("'" + context + "' item:" + id);
+  }*/
+
+  chrome.contextMenus.create({
+    id: 'transbygoo',
+    title: '使用Google翻译',
+    contexts: ['selection'],
+    type: 'normal'
+  });
+
+  // Create a parent item and two children.
+  var parent = chrome.contextMenus.create({ "id": increCount(), "title": "Test parent item" });
+  var child1 = chrome.contextMenus.create({ "id": increCount(), "title": "Child 1", "parentId": parent });
+  var child2 = chrome.contextMenus.create({ "id": increCount(), "title": "Child 2", "parentId": parent });
+  console.log("parent:" + parent + " child1:" + child1 + " child2:" + child2);
+
+  // Create some radio items.
+  function radioOnClick(info, tab) {
+    console.log("radio item " + info.menuItemId +
+      " was clicked (previous checked state was " +
+      info.wasChecked + ")");
+  }
+  var radio1 = chrome.contextMenus.create({
+    "id": increCount(),
+    "title": "Radio 1",
+    "type": "radio"
+  });
+  var radio2 = chrome.contextMenus.create({
+    "id": increCount(),
+    "title": "Radio 2",
+    "type": "radio"
+  });
+  console.log("radio1:" + radio1 + " radio2:" + radio2);
+
+  // Create some checkbox items.
+  function checkboxOnClick(info, tab) {
+    console.log(JSON.stringify(info));
+    console.log("checkbox item " + info.menuItemId +
+      " was clicked, state is now: " + info.checked +
+      "(previous state was " + info.wasChecked + ")");
+
+  }
+  var checkbox1 = chrome.contextMenus.create({ "id": increCount(), "title": "Checkbox1", "type": "checkbox" });
+  var checkbox2 = chrome.contextMenus.create({ documentUrlPatterns: ['*://*.verycd.com/*'], "id": increCount(), "title": "Checkbox2", "type": "checkbox" });
+  // targetUrlPatterns based on the src attribute of img/audio/video tags
+  console.log("checkbox1:" + checkbox1 + " checkbox2:" + checkbox2);
+  // 几种ItemType "normal", "checkbox", "radio", or "separator"
+
+  // Intentionally create an invalid item, to show off error checking in the
+  // create callback.
+  /*console.log("About to try creating an invalid item - an error about " +
+    "item 999 should show up");
+  chrome.contextMenus.create({ "id": increCount(), "title": "Oops", "parentId": 999 }, function() {
+    if (chrome.extension.lastError) {
+      console.log("Got expected error: " + chrome.extension.lastError.message);
+    }
+  });*/
+}
+
+function popupNotify() {
+  let c = increCount();
+
+  chrome.notifications.create('normalNotify' + c, {
+    type: 'progress',
+    iconUrl: 'images/icon48.png',
+    title: `SAMPLE MESSAGE ${c}`,
+    message: 'good kids',
+    contextMessage: `${c} lambs`,
+    progress: 0,
+    //priority: 0,
+    //eventTime: Date.now() + 500,
+    buttons: [{
+      title: 'aaa',
+      iconUrl: 'images/aa.png'
+    }, {
+      title: 'bbb',
+      iconUrl: 'images/ic_star_border_black_48dp_1x.png'
+    }, {
+      title: 'ccc',
+      iconUrl: 'images/ic_star_black_48dp_1x.png'
+    }],
+    //imageUrl: 'images/logo.png'
+    /*items: [{
+      title: 'aaa',
+      message: 'aaa'
+    }, {
+      title: 'bbb',
+      message: 'bbb'
+    }, {
+      title: 'ccc',
+      message: 'ccc'
+    }]*/
+  }, function(notificationId) {
+    let prog = 0;
+
+    function cal() {
+      prog += 2;
+      chrome.notifications.update(notificationId, {
+        progress: prog
+      });
+      if (prog < 100)
+        setTimeout(cal, 100);
+      else {
+        setTimeout(function() {
+          chrome.notifications.clear(notificationId);
+          createNotify('OK', 'progress done');
+        }, 200);
+      }
+    }
+    setTimeout(cal, 100);
+  });
+}
+
+function createNotify(msg, title = 'TIPS') {
+  chrome.notifications.create('sampleNotify' + increCount(), {
+    iconUrl: 'images/ic_star_border_black_48dp_1x.png',
+    title: title,
+    message: msg,
+    contextMessage: '2 lambs',
+    type: 'basic'
+  });
+}
+
+
+function $(id) {
+  return {
+    [0]: document.querySelector(id),
+    val(value, func) {
+      if (!this[0]) return void 0;
+      if (typeof value === 'function') {
+        let v = this[0].value
+        value.call(this[0], v);
+        return v;
+      }
+      if (typeof func === 'function') {
+        this[0].value = value;
+        func.call(this[0], value);
+      }
+      if (arguments.length === 0) {
+        return this[0].value;
+      } else {
+        this[0].value = value;
+        return this;
+      }
+    }
+  };
+}
+
+const local = chrome.storage.local;
+
+function loadStorage() {
+  local.get(['badgeColor', 'badgeText'], function(items) {
+    if (items.badgeColor) {
+      $('#badgeColor').val(items.badgeColor, function(val) {
+        lo.setBadgeBackgroundColor(val);
+      });
+    }
+    if (items.badgeText) {
+      $('#badgeText').val(items.badgeText, function(val) {
+        lo.setBadgeText(val);
+      });
+    }
+  });
+}
+
+
+chrome.runtime.onInstalled.addListener(function(info) {
+  console.info('install reason: ', info);
+  createMenu();
+  loadStorage();
+});
+
+chrome.contextMenus.onClicked.addListener(function(info, tab) {
+  // info => menuItemId, parentMenuItemId, mediaType, linkUrl, srcUrl, pageUrl, frameUrl, frameId, selectionText, editable, wasChecked, checked
+  //console.info(info);
+  //console.info(tab);
+  if (info.menuItemId === 'transbygoo') {
+    var url = 'http://translate.google.com.hk/#auto/zh-CN/' + info.selectionText;
+    window.open(url, '_blank');
+  }
+});
+
+chrome.notifications.onClicked.addListener(function(notificationId) {
+
+});
+chrome.notifications.onButtonClicked.addListener(function(notificationId, buttonIndex) {
+
+});
+
+chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
+  if (msg.id) {
+    switch (msg.id) {
+      case 'transbygoo':
+        chrome.contextMenus.update('transbygoo', {
+          title: `使用Google翻译"${msg.text}"`
+        }, function() {});
+        break;
+      case 'popupNotify':
+        popupNotify();
+        break;
+    }
+  }
+});
+
+chrome.omnibox.setDefaultSuggestion({
+  description: 'I KNEW IT _ <match>%s</match>'
+});
+
+
+var url = 'https://query.yahooapis.com/v1/public/yql?q=SELECT%20*%20FROM%20yahoo.finance.xchange%20where%20pair%20%3D%20%27USDCNY%27&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&diagnostics=false&format=xml';
+// http://finance.yahoo.com/quote/USDCNY=X?ltr=1
+// http://finance.yahoo.com/webservice/v1/symbols/allcurrencies/quote?format=xml
+var price;
+
+(function loadRate() {
+  httpRequest(url, function(r) {
+    var doc = r.responseXML;
+    var rate = doc.querySelector('Rate');
+    price = Number(rate.textContent);
+    console.info(price);
+  });
+})();
+
+function gotoYahoo(text, disposition) {
+  window.open('http://finance.yahoo.com/q?s=USDCNY=X');
+}
+
+function updateAmount(amount, exchange) {
+  if (!price) return;
+  amount = Number(amount);
+  if (isNaN(amount) || !amount) {
+    exchange([{
+      'content': '$1 = ¥' + price.toFixed(4),
+      'description': '$1 = ¥' + price.toFixed(4)
+    }, {
+      'content': '¥1 = $' + (1 / price).toFixed(6),
+      'description': '¥1 = $' + (1 / price).toFixed(6)
+    }]);
+  } else {
+    exchange([{
+      'content': '$' + amount + ' = ¥' + (amount * price).toFixed(4),
+      'description': '$' + amount + ' = ¥' + (amount * price).toFixed(4)
+    }, {
+      'content': '¥' + amount + ' = $' + (amount / price).toFixed(6),
+      'description': '¥' + amount + ' = $' + (amount / price).toFixed(6)
+    }]);
+  }
+}
+
+chrome.omnibox.onInputStarted.addListener(function() {
+  console.info('started.');
+
+});
+
+chrome.omnibox.onInputChanged.addListener(function(text, suggest) {
+  // suggest([]SuggestResult)
+  if (text === 'v') {
+    suggest([{
+      content: 'http://www.verycd.com',
+      description: '<match>V</match>ERYCD<dim>.COM</dim> - <url>http://www.verycd.com</url>'
+    }]);
+  } else if (text.startsWith('msg:') && text.indexOf('{', 4) < text.lastIndexOf('}')) {
+    let msg = /\{([^\}]*)\}/.exec(text)[1];
+    if (msg.trim() !== '') {
+      createNotify(msg);
+    }
+  } else if (text.startsWith('moz:')) {
+    suggest([{
+      content: `https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/${text.substring(4)}`,
+      description: 'MOZ JAVASCRIPT DOC'
+    }])
+  }
+});
+
+chrome.omnibox.onInputChanged.addListener(updateAmount);
+
+chrome.omnibox.onInputEntered.addListener(function(text, onInputEnteredDisposition) {
+  // "currentTab", "newForegroundTab", or "newBackgroundTab"
+  chrome.tabs.query({
+    active: true
+  }, function(tabs) {
+    if (tabs.length > 0) {
+      chrome.tabs.update(tabs[0].id, {
+        url: text
+      });
+    }
+  });
+});
+chrome.omnibox.onInputCancelled.addListener(function() {
+  console.info('cancelled.');
+});
