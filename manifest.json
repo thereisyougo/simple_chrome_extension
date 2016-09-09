@@ -4,6 +4,10 @@
   "version": "1.0",
   "description": "Resize Window",
 	"browser_action": {
+    "default_icon": {
+      "19": "images/icon19.png",
+      "38": "images/icon38.png"
+    },
 		"default_title": "Resize Window",
 		"default_popup": "popup.html"
 	},
@@ -18,10 +22,15 @@
     "unlimitedStorage",
     "storage",
     "contextMenus",
-    "notifications"
+    "notifications",
+    "bookmarks",
+    "cookies",
+    "<all_urls>"
   ],
   "icons": {
-    "16": "images/icon16.png"
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
   },
   "content_scripts": [
     {
@@ -33,5 +42,8 @@
       "js": ["js/iter.js"]
     }
   ],
-  "omnibox": { "keyword" : "mx" }
+  "omnibox": { "keyword" : "x" }
 }
+/*
+书签对象有8个属性，分别是id、parentId、index、url、title、dateAdded、dateGroupModified和children。这8个属性并不是每个书签对象都具有的，比如书签分类，即一个文件夹，它就不具有url属性。index属性是这个书签在其父节点中的位置，它的值是从0开始的。children属性值是一个包含若干书签对象的数组。dateAdded和dateGroupModified的值是自1970年1月1日至修改时间所经过的毫秒数。
+*/

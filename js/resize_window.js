@@ -23,11 +23,46 @@ document.addEventListener('click', function(e) {
     case 'popupNotify':
       lo.popupNotify();
       break;
+    case 'showMarks':
+      lo.showMarks();
+      break;
+    case 'searchMark':
+      lo.searchMark();
+      break;
   }
 });
 
 const lo = {
   empty() {},
+  searchMark() {
+    let kw = $('#markKeyword').val();
+    if (_.isEmpty(kw)) return;
+    let array = [];
+    chrome.bookmarks.search(kw, function(treeNodes) {
+      treeNodes.forEach(function(entry) {
+        array.push(entry);
+      });
+      $('#marks_content').val(JSON.stringify(array));
+    });
+  },
+  showMarks() {
+    let array = [];
+    function walk(nodes) {
+      nodes.forEach(function(entry) {
+        if ('children' in entry && entry.children.length) {
+          walk(entry.children);
+          delete entry.children;
+          Object.defineProperty(entry, 'type', { value: 'folder', enumerable: true })
+          //entry.type = 'folder';
+        }
+        array.push(entry);
+      });
+    }
+    chrome.bookmarks.getTree(function(treeNodes) {
+      walk(treeNodes);
+      $('#marks_content').val(JSON.stringify(array));
+    });
+  },
   popupNotify() {
     chrome.runtime.sendMessage({id: 'popupNotify'});
   },
@@ -52,20 +87,30 @@ const lo = {
       this.setBadgeBackgroundColor(badgeColor);
       local.set({ badgeColor });
     }
-    if (!_.isEmpty(badgeText)) {
+    //if (!_.isEmpty(badgeText)) {
       this.setBadgeText(badgeText);
       local.set({ badgeText });
-    }
+    //}
   },
   resizeBtn() {
-    chrome.windows.getCurrent({ populate: true }, function(w) {
-      // console.info(w.id);
-      // console.info(w);
-      chrome.windows.update(w.id, {
-        width: 1280,
-        height: 800,
+    chrome.windows.getCurrent({ populate: true }, function(win) {
+      // console.info(win.id);
+      // console.info(win);
+      let f = (val, defaultVal) => _.isEmpty(val) ? defaultVal : val;
+
+      let w = $('#browserWidth').val();
+          h = $('#browserHeight').val();
+      w = f(w, 1280);
+      h = f(h, 800);
+      local.set({
+        browserWidth: w,
+        browserHeight: h
+      });
+      chrome.windows.update(win.id, {
+        width: Number(w),
+        height: Number(h),
         drawAttention: true
-      }, function(w) {
+      }, function(win) {
 
       });
     });
@@ -118,7 +163,7 @@ const lo = {
 
 const local = chrome.storage.local;
 
-local.get(['matchUrl', 'badgeColor', 'badgeText'], function(items) {
+local.get(['matchUrl', 'badgeColor', 'badgeText', 'browserWidth', 'browserHeight'], function(items) {
   if (items.matchUrl)
     $('#matchUrl').val(items.matchUrl);
   if (items.badgeColor) {
@@ -128,6 +173,12 @@ local.get(['matchUrl', 'badgeColor', 'badgeText'], function(items) {
   if (items.badgeText) {
     $('#badgeText').val(items.badgeText);
     lo.setBadgeText(items.badgeText);
+  }
+  if (items.browserWidth) {
+    $('#browserWidth').val(items.browserWidth);
+  }
+  if (items.browserHeight) {
+    $('#browserHeight').val(items.browserHeight);
   }
 });
 

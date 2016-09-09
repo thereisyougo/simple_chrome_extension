@@ -9,7 +9,7 @@ body {
 <script src="js/lodash.min.js"></script>
 </head>
 <body>
-<input type="button" value="RESIZE" id="reszieBtn"><br>
+<input id="browserWidth" value="1280" size="4" placeholder="Width"> X <input id="browserHeight" value="800" size="4" placeholder="Height"><input type="button" value="RESIZE" id="reszieBtn"><br>
 <input type="button" value="FIRST_TAB" id="tab0"><input type="button" value="LAST_TAB" id="tab1"><br>
 
 URL*: <input id="matchUrl" placeholder="Match Patterns"><br>
@@ -19,6 +19,11 @@ BADGE COLOR: <input id="badgeColor" placeholder="ColorName or Array"><br>
 BADGE TEXT: <input id="badgeText"><br>
 <input type="button" value="Change Badge" id="changeBadge"><br>
 <input type="button" value="Popup Notify" id="popupNotify"><br>
+<textarea id="marks_content"></textarea>
+<input type="button" value="Show Marks" id="showMarks"><br>
+<input type="text" id="markKeyword" placeholder="Keyword in URL or Title"><br>
+<input type="button" value="Search Mark" id="searchMark"><br>
+
 
 <script src="js/resize_window.js"></script>
 </body>
