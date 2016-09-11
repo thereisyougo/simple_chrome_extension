@@ -3,7 +3,7 @@
 <head>
     <style>
     body {
-        width: 230px;
+        width: 250px;
     }
     
     .as-button {
@@ -24,12 +24,12 @@
     .as-button:hover {
         color: #757575;
     }
-
+    
     .subtab {
-    	background-color: #fafafa;
-    	box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .26);
-    	padding: 3px 3px;
-    	display: none;
+        background-color: #fafafa;
+        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .26);
+        padding: 3px 3px;
+        display: none;
     }
     </style>
     <script src="js/jquery.min.js"></script>
@@ -75,11 +75,16 @@
             <input id="cookieName" placeholder="Cookie Name or Empty is All">
             <input type="button" value="Get Cookies" id="getCookies">
             <input type="button" value="Remove Cookies" id="removeCookies">
+            <br> HISTORY CONTENT:
+            <input id="historyText">
+            <br> START:
+            <input type="datetime-local" id="startTime">
+            <br> END:
+            <input type="datetime-local" id="endTime">
+            <br> RESULT COUNT:
+            <input value="100" size="2" id="maxResults">
             <br>
-            HISTORY CONTENT:<input id="historyText"><br>
-            START:<input type="datetime-local" id="startTime"><br>
-            END:<input type="datetime-local" id="endTime"><br>
-            RESULT COUNT:<input value="100" size="2" id="maxResults"><input type="button" value="Search History" id="searchHistory">
+            <input type="button" value="Search History" id="searchHistory">
         </div>
     </div>
     <script src="js/resize_window.js"></script>
