@@ -29,11 +29,47 @@ document.addEventListener('click', function(e) {
     case 'searchMark':
       lo.searchMark();
       break;
+    case 'getCookies':
+      lo.getCookies();
+      break;
+    case 'removeCookies':
+      lo.removeCookies();
+      break;
   }
 });
 
 const lo = {
   empty() {},
+  removeCookies() {
+    chrome.tabs.query({active: true}, function(tabs) {
+      if (tabs.length === 0) return;
+      chrome.cookies.getAll({
+        url: tabs[0].url
+      }, function(cookies) {
+        let array = [];
+        cookies.forEach(function(cookie) {
+          chrome.cookies.remove({
+            url: tabs[0].url,
+            name: cookie.name//,
+            //storeId: cookie.storeId
+          }, function(details) {
+            array.push(details);
+          })
+        });
+        $('#marks_content').val(JSON.stringify(array));
+      });
+    })
+  },
+  getCookies() {
+    chrome.tabs.query({active: true}, function(tabs) {
+      if (tabs.length === 0) return;
+      chrome.cookies.getAll({
+        url: tabs[0].url
+      }, function(cookies) {
+        $('#marks_content').val(JSON.stringify(cookies));
+      });
+    })
+  },
   searchMark() {
     let kw = $('#markKeyword').val();
     if (_.isEmpty(kw)) return;
@@ -186,3 +222,4 @@ local.get(['matchUrl', 'badgeColor', 'badgeText', 'browserWidth', 'browserHeight
 
 //jpgmnamnpadjhlgacaemfcfgdonjdjnl
 //chrome-extension://jpgmnamnpadjhlgacaemfcfgdonjdjnl/popup.html
+//chrome-extension://oimcnnhpjpepmhonikdllcleijcnfben/popup.html
