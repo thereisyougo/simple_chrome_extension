@@ -25,7 +25,8 @@
     "notifications",
     "bookmarks",
     "cookies",
-    "<all_urls>"
+    "<all_urls>",
+    "history"
   ],
   "icons": {
     "16": "images/icon16.png",

@@ -264,7 +264,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 });
 
 chrome.omnibox.setDefaultSuggestion({
-  description: 'I KNEW IT _ <match>%s</match>'
+  description: '<match>%s</match>'
 });
 
 
@@ -330,10 +330,10 @@ chrome.omnibox.onInputChanged.addListener(function(text, suggest) {
       content: `https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/${text.substring(4)}`,
       description: 'MOZ JAVASCRIPT DOC'
     }])
+  } else if (!isNaN(text)) {
+    updateAmount(text, suggest);
   }
 });
-
-chrome.omnibox.onInputChanged.addListener(updateAmount);
 
 chrome.omnibox.onInputEntered.addListener(function(text, onInputEnteredDisposition) {
   // "currentTab", "newForegroundTab", or "newBackgroundTab"

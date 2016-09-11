@@ -1,3 +1,6 @@
+const local = chrome.storage.local;
+const tabs = [];
+
 document.addEventListener('click', function(e) {
   var target = e.target;
   if (!('id' in target)) return;
@@ -35,17 +38,41 @@ document.addEventListener('click', function(e) {
     case 'removeCookies':
       lo.removeCookies();
       break;
+    case 'searchHistory':
+      lo.searchHistory();
+      break;
   }
 });
 
 const lo = {
   empty() {},
+  searchHistory() {
+    let historyText = $('#historyText').val();
+    let startTime = $('#startTime').val();
+    let endTime = $('#endTime').val();
+    let maxResults = $('#maxResults').val();
+
+    $('#marks_content').val();
+    let queryObj = {
+      text: historyText,
+      startTime: lo.datetimeToDate(startTime).getTime(),
+      endTime: lo.datetimeToDate(endTime).getTime(),
+      maxResults: Number(maxResults)
+    };
+    chrome.history.search(queryObj, function(historyItems) {
+      $('#marks_content').val(JSON.stringify(historyItems));
+    });
+  },
+  datetimeToDate(value) {
+    return new Date(...(value.split(/\D/).map(function(v, i) {
+      if (i === 1) return String(Number(v) - 1);
+      return v;
+    })));
+  },
   removeCookies() {
     chrome.tabs.query({active: true}, function(tabs) {
       if (tabs.length === 0) return;
-      chrome.cookies.getAll({
-        url: tabs[0].url
-      }, function(cookies) {
+      chrome.cookies.getAll(lo.queryCookieCondition(tabs[0].url), function(cookies) {
         let array = [];
         cookies.forEach(function(cookie) {
           chrome.cookies.remove({
@@ -63,12 +90,20 @@ const lo = {
   getCookies() {
     chrome.tabs.query({active: true}, function(tabs) {
       if (tabs.length === 0) return;
-      chrome.cookies.getAll({
-        url: tabs[0].url
-      }, function(cookies) {
+      chrome.cookies.getAll(lo.queryCookieCondition(tabs[0].url), function(cookies) {
         $('#marks_content').val(JSON.stringify(cookies));
       });
     })
+  },
+  queryCookieCondition(url) {
+    let queryObj = {
+      url: url,
+    }
+    let cookieName = $('#cookieName').val();
+    if (!_.isEmpty(cookieName)) {
+      $.extend(queryObj, {name: cookieName})
+    }
+    return queryObj;
   },
   searchMark() {
     let kw = $('#markKeyword').val();
@@ -194,30 +229,64 @@ const lo = {
   changeTitle() {
     let badgeTitle = document.getElementById('badgeTitle').value;
     chrome.browserAction.setTitle({ title: badgeTitle });
+  },
+  changeTab(index) {
+    if (tabs.length === 0) return;
+    if (!_.isNumber(index)) {
+      tabs.slice(1).forEach(function(el) {
+        $(el).hide();
+      });
+    } else {
+      $(tabs[index]).show();
+      let copy = tabs.slice()
+      copy.splice(index, 1);
+      copy.forEach(function(el) {
+        $(el).hide();
+      });
+    }
   }
 }
 
-const local = chrome.storage.local;
 
-local.get(['matchUrl', 'badgeColor', 'badgeText', 'browserWidth', 'browserHeight'], function(items) {
-  if (items.matchUrl)
-    $('#matchUrl').val(items.matchUrl);
-  if (items.badgeColor) {
-    $('#badgeColor').val(items.badgeColor);
-    lo.setBadgeBackgroundColor(items.badgeColor);
-  }
-  if (items.badgeText) {
-    $('#badgeText').val(items.badgeText);
-    lo.setBadgeText(items.badgeText);
-  }
-  if (items.browserWidth) {
-    $('#browserWidth').val(items.browserWidth);
-  }
-  if (items.browserHeight) {
-    $('#browserHeight').val(items.browserHeight);
-  }
+
+$(function() {
+  (function buildTab() {
+    let index = 1;
+    $('.wrapper > div[id^="tab"]').each(function(_, el) {
+      tabs.push(el);
+      $('header').append($('<span/>').addClass('as-button').text(index++))
+    });
+  }());
+  $(document).on('click', function(e) {
+    let target = e.target;
+    if ($(target).hasClass('as-button')) {
+      let index = Number($(target).text()) - 1;
+      lo.changeTab(index);
+      local.set({currentTab: index});
+    }
+  });
+
+  local.get(['matchUrl', 'badgeColor', 'badgeText', 'browserWidth', 'browserHeight', 'currentTab'], function(items) {
+    if (items.matchUrl)
+      $('#matchUrl').val(items.matchUrl);
+    if (items.badgeColor) {
+      $('#badgeColor').val(items.badgeColor);
+      lo.setBadgeBackgroundColor(items.badgeColor);
+    }
+    if (items.badgeText) {
+      $('#badgeText').val(items.badgeText);
+      lo.setBadgeText(items.badgeText);
+    }
+    if (items.browserWidth) {
+      $('#browserWidth').val(items.browserWidth);
+    }
+    if (items.browserHeight) {
+      $('#browserHeight').val(items.browserHeight);
+    }
+    lo.changeTab(items.currentTab);
+
+  });
 });
-
 
 
 //jpgmnamnpadjhlgacaemfcfgdonjdjnl

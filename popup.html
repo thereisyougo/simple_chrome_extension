@@ -1,31 +1,88 @@
 <html>
+
 <head>
-<style>
-body {
-    width: 230px;
-}
-</style>
-<script src="js/jquery.min.js"></script>
-<script src="js/lodash.min.js"></script>
+    <style>
+    body {
+        width: 230px;
+    }
+    
+    .as-button {
+        background-color: #fafafa;
+        border: 0;
+        border-radius: 3px;
+        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .26);
+        display: inline-block;
+        line-height: 5px;
+        margin: 1px 7px 5px 0;
+        min-width: 15px;
+        padding: 7px 3px;
+        text-align: center;
+        text-transform: uppercase;
+        cursor: pointer;
+    }
+    
+    .as-button:hover {
+        color: #757575;
+    }
+
+    .subtab {
+    	background-color: #fafafa;
+    	box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .26);
+    	padding: 3px 3px;
+    	display: none;
+    }
+    </style>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/lodash.min.js"></script>
 </head>
+
 <body>
-<input id="browserWidth" value="1280" size="4" placeholder="Width"> X <input id="browserHeight" value="800" size="4" placeholder="Height"><input type="button" value="RESIZE" id="reszieBtn"><br>
-<input type="button" value="FIRST_TAB" id="tab0"><input type="button" value="LAST_TAB" id="tab1"><br>
-
-URL*: <input id="matchUrl" placeholder="Match Patterns"><br>
-<input type="button" value="CloseTab" id="closeTab"><br>
-TITLE: <input id="badgeTitle"><input type="button" value="ChangeTitle" id="changeTitle"><br>
-BADGE COLOR: <input id="badgeColor" placeholder="ColorName or Array"><br>
-BADGE TEXT: <input id="badgeText"><br>
-<input type="button" value="Change Badge" id="changeBadge"><br>
-<input type="button" value="Popup Notify" id="popupNotify"><br>
-<textarea id="marks_content"></textarea>
-<input type="button" value="Show Marks" id="showMarks"><br>
-<input id="markKeyword" placeholder="Keyword in URL or Title"><br>
-<input type="button" value="Search Mark" id="searchMark"><br>
-<input type="button" value="Get Cookies" id="getCookies"><br>
-<input id="cookieName" placeholder="Cookie Name or Empty is All"><input type="button" value="Remove Cookies" id="removeCookies"><br>
-
-<script src="js/resize_window.js"></script>
+    <header id="header" class="">
+    </header>
+    <!-- /header -->
+    <div class="wrapper">
+        <div class="subtab" id="tab1">
+            <input id="browserWidth" value="1280" size="4" placeholder="Width"> X
+            <input id="browserHeight" value="800" size="4" placeholder="Height">
+            <input type="button" value="RESIZE" id="reszieBtn">
+            <br>
+            <input type="button" value="FIRST_TAB" id="tab0">
+            <input type="button" value="LAST_TAB" id="tab1">
+            <br> URL*:
+            <input id="matchUrl" placeholder="Match Patterns">
+            <br>
+            <input type="button" value="CloseTab" id="closeTab">
+            <br> TITLE:
+            <input id="badgeTitle">
+            <input type="button" value="ChangeTitle" id="changeTitle">
+            <br> BADGE COLOR:
+            <input id="badgeColor" placeholder="ColorName or Array">
+            <br> BADGE TEXT:
+            <input id="badgeText">
+            <br>
+            <input type="button" value="Change Badge" id="changeBadge">
+            <br>
+            <input type="button" value="Popup Notify" id="popupNotify">
+        </div>
+        <div class="subtab" id="tab2">
+            <textarea rows="7" id="marks_content"></textarea>
+            <input type="button" value="Show Marks" id="showMarks">
+            <br>
+            <input id="markKeyword" placeholder="Keyword in URL or Title">
+            <br>
+            <input type="button" value="Search Mark" id="searchMark">
+            <br>
+            <input id="cookieName" placeholder="Cookie Name or Empty is All">
+            <input type="button" value="Get Cookies" id="getCookies">
+            <input type="button" value="Remove Cookies" id="removeCookies">
+            <br>
+            HISTORY CONTENT:<input id="historyText"><br>
+            START:<input type="datetime-local" id="startTime"><br>
+            END:<input type="datetime-local" id="endTime"><br>
+            RESULT COUNT:<input value="100" size="2" id="maxResults"><input type="button" value="Search History" id="searchHistory">
+        </div>
+    </div>
+    <script src="js/resize_window.js"></script>
 </body>
+
 </html>
