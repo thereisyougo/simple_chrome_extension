@@ -41,27 +41,54 @@ document.addEventListener('click', function(e) {
     case 'searchHistory':
       lo.searchHistory();
       break;
+    case 'removeHistory':
+      lo.removeHistory();
+      break;
   }
 });
 
 const lo = {
   empty() {},
+  removeHistory() {
+    chrome.history.search(lo.getHistoryQueryObject(), function(historyItems) {
+      historyItems.forEach(function(item) {
+        chrome.history.deleteUrl({
+          url: item.url
+        }, function() {});
+      });
+      $('#marks_content').val(`${historyItems.length} history has removed`);
+    });
+  },
   searchHistory() {
+    chrome.history.search(lo.getHistoryQueryObject(), function(historyItems) {
+      let pros = [];
+      historyItems.forEach(function(item) {
+        pros.push(new Promise(function(resolve) {
+          chrome.history.getVisits({
+            url: item.url
+          }, function(visitItems) {
+            item.visit = visitItems;
+            resolve();
+          })
+        }));
+      });
+      Promise.all(pros).then(function() {
+        $('#marks_content').val(JSON.stringify(historyItems));
+      });
+    });
+  },
+  getHistoryQueryObject() {
     let historyText = $('#historyText').val();
     let startTime = $('#startTime').val();
     let endTime = $('#endTime').val();
     let maxResults = $('#maxResults').val();
 
-    $('#marks_content').val();
-    let queryObj = {
+    return {
       text: historyText,
       startTime: lo.datetimeToDate(startTime).getTime(),
       endTime: lo.datetimeToDate(endTime).getTime(),
       maxResults: Number(maxResults)
     };
-    chrome.history.search(queryObj, function(historyItems) {
-      $('#marks_content').val(JSON.stringify(historyItems));
-    });
   },
   datetimeToDate(value) {
     return new Date(...(value.split(/\D/).map(function(v, i) {
@@ -244,10 +271,14 @@ const lo = {
         $(el).hide();
       });
     }
+  },
+  addDays(days) {
+    let d = new Date();
+    d.setDate(d.getDate() + days);
+    let dateString = d.toISOString();
+    return dateString.substring(0, dateString.length - 8);
   }
 }
-
-
 
 $(function() {
   (function buildTab() {
@@ -257,6 +288,7 @@ $(function() {
       $('header').append($('<span/>').addClass('as-button').text(index++))
     });
   }());
+
   $(document).on('click', function(e) {
     let target = e.target;
     if ($(target).hasClass('as-button')) {
@@ -265,6 +297,10 @@ $(function() {
       local.set({currentTab: index});
     }
   });
+
+  // 初始化历史时间
+  $('#startTime').val(lo.addDays(-1));
+  $('#endTime').val(lo.addDays(0));
 
   local.get(['matchUrl', 'badgeColor', 'badgeText', 'browserWidth', 'browserHeight', 'currentTab'], function(items) {
     if (items.matchUrl)
