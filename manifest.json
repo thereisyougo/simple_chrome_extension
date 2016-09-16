@@ -47,4 +47,5 @@
 }
 /*
 书签对象有8个属性，分别是id、parentId、index、url、title、dateAdded、dateGroupModified和children。这8个属性并不是每个书签对象都具有的，比如书签分类，即一个文件夹，它就不具有url属性。index属性是这个书签在其父节点中的位置，它的值是从0开始的。children属性值是一个包含若干书签对象的数组。dateAdded和dateGroupModified的值是自1970年1月1日至修改时间所经过的毫秒数。
+search和getVisits用于读取历史，addUrl用于添加历史，deleteUrl、deleteRange和deleteAll用于删除历史
 */

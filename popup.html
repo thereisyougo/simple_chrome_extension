@@ -31,9 +31,14 @@
         padding: 3px 3px;
         display: none;
     }
+
+    #countCurrency {
+    	width: 2cm;
+    }
     </style>
     <script src="js/jquery.min.js"></script>
     <script src="js/lodash.min.js"></script>
+    <script src="js/mustache.js"></script>
 </head>
 
 <body>
@@ -86,6 +91,17 @@
             <br>
             <input type="button" value="Search History" id="searchHistory">
             <input type="button" value="Remove Searched History" id="removeHistory">
+        </div>
+        <div class="subtab" id="tab3">
+            <input tabindex="56" size="3" list="currency" id="fromCurrency">
+            <input type="button" value="TO" id="changeDirection">
+            <input tabindex="57" size="3" list="currency" id="toCurrency">
+            <input type="button" value="TRANSLATE" id="translateCurrency">
+            <input id="countCurrency" type="number">
+            <datalist id="currency">
+            </datalist><br>
+
+            RESULT:<input id="resultCurrency">
         </div>
     </div>
     <script src="js/resize_window.js"></script>

@@ -1,5 +1,7 @@
 const local = chrome.storage.local;
 const tabs = [];
+var translateCurrencyUrl = 'https://query.yahooapis.com/v1/public/yql?q=SELECT%20*%20FROM%20yahoo.finance.xchange%20where%20pair%20%3D%20%27{{ fromCurrency }}{{ toCurrency }}%27&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&diagnostics=false&format=xml';
+
 
 document.addEventListener('click', function(e) {
   var target = e.target;
@@ -44,11 +46,55 @@ document.addEventListener('click', function(e) {
     case 'removeHistory':
       lo.removeHistory();
       break;
+    case 'changeDirection':
+      lo.changeDirection();
+      break;
+    case 'translateCurrency':
+      lo.translateCurrency();
+      break;
+    case 'fromCurrency':
+      lo.focus.call(target);
+      break;
+    case 'toCurrency':
+      lo.focus.call(target);
+      break;
   }
 });
 
+
+
 const lo = {
   empty() {},
+  focus() {
+    this.select();
+  },
+  price: 0,
+  translateCurrency() {
+    let toCurrency = $('#toCurrency').val();
+    let fromCurrency = $('#fromCurrency').val();
+    if (_.isEmpty(toCurrency) || _.isEmpty(fromCurrency)) return;
+    // 存储下来
+    local.set({
+      toCurrency,
+      fromCurrency
+    });
+
+    let url = Mustache.render(translateCurrencyUrl, {toCurrency, fromCurrency})
+    // console.info(url);
+    $.get(url, function(data) {
+      let rate = data.querySelector('Rate');
+      lo.price = Number(rate.textContent)
+      $('#resultCurrency').val(rate.textContent);
+    }, 'xml').fail(function(jqXHR, textStatus, errorThrown) {
+      // console.info(arguments);
+      lo.createNotify(textStatus);
+    });
+  },
+  changeDirection() {
+    let [x, y] = [$('#fromCurrency').val(), $('#toCurrency').val()];
+    $('#toCurrency').val(x);
+    $('#fromCurrency').val(y);
+  },
   removeHistory() {
     chrome.history.search(lo.getHistoryQueryObject(), function(historyItems) {
       historyItems.forEach(function(item) {
@@ -277,6 +323,15 @@ const lo = {
     d.setDate(d.getDate() + days);
     let dateString = d.toISOString();
     return dateString.substring(0, dateString.length - 8);
+  },
+  createNotify(msg, title = 'TIPS', contextMessage) {
+    chrome.notifications.create('sampleNotify' + increCount(), {
+      iconUrl: 'images/ic_star_border_black_48dp_1x.png',
+      title: title,
+      message: msg,
+      contextMessage: contextMessage,
+      type: 'basic'
+    });
   }
 }
 
@@ -297,12 +352,27 @@ $(function() {
       local.set({currentTab: index});
     }
   });
+  $('#countCurrency').on('keyup mouseup', function(e) {
+    let target = e.target;
+    //console.info(target);
+    if (lo.price !== 0) {
+      $('#resultCurrency').val((Number(target.value).toFixed(4) * lo.price.toFixed(4)).toFixed(4))
+    }
+  });
 
   // 初始化历史时间
   $('#startTime').val(lo.addDays(-1));
   $('#endTime').val(lo.addDays(0));
 
-  local.get(['matchUrl', 'badgeColor', 'badgeText', 'browserWidth', 'browserHeight', 'currentTab'], function(items) {
+  // 加载货币下拉选项
+  $.get('js/currency_name.json', function(data) {
+    data.forEach(function(item) {
+      $('#currency').append($('<option/>', { value: item.symbol, text: item.name }))
+    })
+  }, 'json');
+
+  local.get(['matchUrl', 'badgeColor', 'badgeText', 'browserWidth', 'browserHeight', 'currentTab', 'toCurrency', 'fromCurrency'], function(items) {
+    assertAssign = assertAssign.bind(items);
     if (items.matchUrl)
       $('#matchUrl').val(items.matchUrl);
     if (items.badgeColor) {
@@ -313,16 +383,27 @@ $(function() {
       $('#badgeText').val(items.badgeText);
       lo.setBadgeText(items.badgeText);
     }
-    if (items.browserWidth) {
-      $('#browserWidth').val(items.browserWidth);
-    }
-    if (items.browserHeight) {
-      $('#browserHeight').val(items.browserHeight);
-    }
-    lo.changeTab(items.currentTab);
+    assertAssign('browserWidth')
+    assertAssign('browserHeight')
+    assertAssign('fromCurrency')
+    assertAssign('toCurrency')
 
+    lo.changeTab(items.currentTab);
   });
+
+  function assertAssign(name) {
+    if (this[name]) {
+      $(Mustache.render('#{{.}}', name)).val(this[name]);
+    }
+  }
 });
+
+var increCount = (function() {
+  let count = 0;
+  return function() {
+    return String(++count);
+  };
+})();
 
 
 //jpgmnamnpadjhlgacaemfcfgdonjdjnl
