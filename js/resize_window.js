@@ -58,6 +58,21 @@ document.addEventListener('click', function(e) {
     case 'toCurrency':
       lo.focus.call(target);
       break;
+    case 'gotoOptions':
+      lo.gotoOptions();
+      break;
+    case 'extensionsInfo':
+      lo.extensionsInfo();
+      break;
+    case 'extensionInfo':
+      lo.extensionInfo();
+      break;
+    case 'enableExtension':
+      lo.enableExtension();
+      break;
+    case 'uninstallExtension':
+      lo.uninstallExtension();
+      break;
   }
 });
 
@@ -65,6 +80,52 @@ document.addEventListener('click', function(e) {
 
 const lo = {
   empty() {},
+  uninstallExtension() {
+    let extensionId = $('#extensionId').val();
+    if (_.isEmpty(extensionId)) {
+      chrome.management.uninstallSelf({showConfirmDialog: true}, function() {
+        // ...
+        lo.createNotify('Resize Window was uninstalled')
+      });
+    } else {
+      chrome.management.uninstall(extensionId, {showConfirmDialog: true}, function() {
+        $('#marks_content').val(`Extension ${extensionId} has been removed from browser`);
+      })
+    }
+  },
+  enableExtension() {
+    let extensionId = $('#extensionId').val();
+    let enabled = $('#whetherEnable').prop('checked');
+    if (!_.isEmpty(extensionId)) {
+      chrome.management.setEnabled(extensionId, enabled, function() {});
+    }
+  },
+  extensionInfo() {
+    let extensionId = $('#extensionId').val();
+    if (_.isEmpty(extensionId)) {
+      chrome.management.getSelf(function(extensionInfo) {
+        $('#marks_content').val(JSON.stringify(extensionInfo));
+      });
+    } else {
+      chrome.management.get(extensionId, function(extensionInfo) {
+        $('#marks_content').val(JSON.stringify(extensionInfo));
+      })
+    }
+  },
+  extensionsInfo() {
+    chrome.management.getAll(function(extensionInfos) {
+      $('#marks_content').val(JSON.stringify(extensionInfos));
+    });
+  },
+  gotoOptions() {
+    if (chrome.runtime.openOptionsPage) {
+      // New way to open options pages, if supported (Chrome 42+).
+      chrome.runtime.openOptionsPage();
+    } else {
+      // Reasonable fallback.
+      window.open(chrome.runtime.getURL('options.html'));
+    }
+  },
   focus() {
     this.select();
   },

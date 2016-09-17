@@ -350,3 +350,19 @@ chrome.omnibox.onInputEntered.addListener(function(text, onInputEnteredDispositi
 chrome.omnibox.onInputCancelled.addListener(function() {
   console.info('cancelled.');
 });
+
+chrome.management.onInstalled.addListener(function(exInfo) {
+  console.log('Extension '+exInfo.id+' has been installed.');
+});
+
+chrome.management.onUninstalled.addListener(function(exId) {
+  console.log('Extension '+exId+' has been uninstalled.');
+});
+
+chrome.management.onEnabled.addListener(function(exInfo) {
+  console.log('Extension '+exInfo.id+' has been enabled.');
+});
+
+chrome.management.onDisabled.addListener(function(exInfo) {
+  console.log('Extension '+exInfo.id+' has been disabled.');
+});
