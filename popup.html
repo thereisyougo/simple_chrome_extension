@@ -35,6 +35,17 @@
     #countCurrency {
     	width: 2cm;
     }
+    #currentSize:hover {
+        color: orange;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    #currentSize:hover:before {
+        content: '[';
+    }
+    #currentSize:hover:after{
+        content: ']';
+    }
     </style>
     <script src="js/jquery.min.js"></script>
     <script src="js/lodash.min.js"></script>
@@ -47,9 +58,10 @@
     <!-- /header -->
     <div class="wrapper">
         <div class="subtab" id="tab1">
-            <input id="browserWidth" value="1280" size="4" placeholder="Width"> X
-            <input id="browserHeight" value="800" size="4" placeholder="Height">
+            <input id="browserWidth" value="1280" size="2" placeholder="Width"> X
+            <input id="browserHeight" value="800" size="2" placeholder="Height">
             <input type="button" value="RESIZE" id="reszieBtn">
+            <span id="currentSize"></span>
             <br>
             <input type="button" value="FIRST_TAB" id="tab0">
             <input type="button" value="LAST_TAB" id="tab1">

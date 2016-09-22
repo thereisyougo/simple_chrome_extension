@@ -27,7 +27,8 @@
     "cookies",
     "<all_urls>",
     "history",
-    "management"
+    "management",
+    "clipboardWrite"
   ],
   "options_ui": {
     "page": "options.html",

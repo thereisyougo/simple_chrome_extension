@@ -431,6 +431,21 @@ $(function() {
       $('#currency').append($('<option/>', { value: item.symbol, text: item.name }))
     })
   }, 'json');
+  
+  // 取当前WIN尺寸
+  chrome.windows.getCurrent({ populate: true }, function(win) {
+    $('#currentSize').data({width: win.width, height: win.height}).text(`${win.width}x${win.height}`).on('click', function(e) {
+      let w = Number($(this).data('width'));
+      let h = Number($(this).data('height'));
+      $('#browserWidth').val(w);
+      $('#browserHeight').val(h);
+      local.set({
+        browserWidth: w,
+        browserHeight: h
+      });
+      lo.createNotify('current window size has been stored')
+    });
+  });
 
   local.get(['matchUrl', 'badgeColor', 'badgeText', 'browserWidth', 'browserHeight', 'currentTab', 'toCurrency', 'fromCurrency'], function(items) {
     assertAssign = assertAssign.bind(items);
