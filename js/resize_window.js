@@ -7,50 +7,11 @@ document.addEventListener('click', function(e) {
   var target = e.target;
   if (!('id' in target)) return;
   switch (target.id) {
-    case 'reszieBtn':
-      lo.resizeBtn();
-      break;
     case 'tab0':
       lo.firstTab();
       break;
     case 'tab1':
       lo.lastTab();
-      break;
-    case 'closeTab':
-      lo.closeTab();
-      break;
-    case 'changeTitle':
-      lo.changeTitle();
-      break;
-    case 'changeBadge':
-      lo.changeBadge();
-      break;
-    case 'popupNotify':
-      lo.popupNotify();
-      break;
-    case 'showMarks':
-      lo.showMarks();
-      break;
-    case 'searchMark':
-      lo.searchMark();
-      break;
-    case 'getCookies':
-      lo.getCookies();
-      break;
-    case 'removeCookies':
-      lo.removeCookies();
-      break;
-    case 'searchHistory':
-      lo.searchHistory();
-      break;
-    case 'removeHistory':
-      lo.removeHistory();
-      break;
-    case 'changeDirection':
-      lo.changeDirection();
-      break;
-    case 'translateCurrency':
-      lo.translateCurrency();
       break;
     case 'fromCurrency':
       lo.focus.call(target);
@@ -58,21 +19,26 @@ document.addEventListener('click', function(e) {
     case 'toCurrency':
       lo.focus.call(target);
       break;
+    case 'reszieBtn':
+    case 'closeTab':
+    case 'changeTitle':
+    case 'changeBadge':
+    case 'popupNotify':
+    case 'showMarks':
+    case 'searchMark':
+    case 'getCookies':
+    case 'removeCookies':
+    case 'searchHistory':
+    case 'removeHistory':
+    case 'changeDirection':
+    case 'translateCurrency':
     case 'gotoOptions':
-      lo.gotoOptions();
-      break;
     case 'extensionsInfo':
-      lo.extensionsInfo();
-      break;
     case 'extensionInfo':
-      lo.extensionInfo();
-      break;
     case 'enableExtension':
-      lo.enableExtension();
-      break;
     case 'uninstallExtension':
-      lo.uninstallExtension();
-      break;
+    default:
+      lo[target.id]();
   }
 });
 

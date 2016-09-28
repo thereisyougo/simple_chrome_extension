@@ -22,12 +22,15 @@
     }
     
     .as-button:hover {
-        color: #757575;
+        @color: #757575;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 255, .26)  inset;
+        text-shadow: 1px 1px 1px rgba(75, 75, 75, 0.12);
     }
     
     .subtab {
         background-color: #fafafa;
         box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .26);
+        text-shadow: 
         padding: 3px 3px;
         display: none;
     }
@@ -115,6 +118,7 @@
             <input tabindex="56" size="3" list="currency" id="fromCurrency">
             <input type="button" value="TO" id="changeDirection">
             <input tabindex="57" size="3" list="currency" id="toCurrency">
+            <br>
             <input type="button" value="TRANSLATE" id="translateCurrency">
             <input id="countCurrency" type="number">
             <datalist id="currency">
