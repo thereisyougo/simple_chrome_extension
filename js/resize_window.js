@@ -146,6 +146,11 @@ const lo = {
       let rate = data.querySelector('Rate');
       lo.price = Number(rate.textContent)
       $('#resultCurrency').val(rate.textContent);
+      let currentCount = $('#countCurrency').val();
+      if (Number(currentCount) > 0) {
+        let r = Number($('#resultCurrency').val());
+        $('#resultCurrency').val((Number(currentCount) * r).toFixed(4));
+      }
     }, 'xml').fail(function(jqXHR, textStatus, errorThrown) {
       // console.info(arguments);
       lo.createNotify(textStatus);
