@@ -37,8 +37,10 @@ document.addEventListener('click', function(e) {
     case 'extensionInfo':
     case 'enableExtension':
     case 'uninstallExtension':
-    default:
+    case 'duplicateTab':
       lo[target.id]();
+    default:
+      //lo.createNotify('no function');
   }
 });
 
@@ -46,6 +48,14 @@ document.addEventListener('click', function(e) {
 
 const lo = {
   empty() {},
+  duplicateTab() {
+    chrome.tabs.query({active: true}, function(tabs) {
+      if (tabs.length === 0) return;
+      chrome.tabs.duplicate(tabs[0].id, function(tab) {
+        lo.createNotify('current tab has been duplicated');
+      });
+    })
+  },
   uninstallExtension() {
     let extensionId = $('#extensionId').val();
     if (_.isEmpty(extensionId)) {
