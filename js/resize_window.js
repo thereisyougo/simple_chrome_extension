@@ -19,7 +19,7 @@ document.addEventListener('click', function(e) {
     case 'toCurrency':
       lo.focus.call(target);
       break;
-    case 'reszieBtn':
+    case 'resizeBtn':
     case 'closeTab':
     case 'changeTitle':
     case 'changeBadge':
