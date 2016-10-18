@@ -38,6 +38,7 @@ document.addEventListener('click', function(e) {
     case 'enableExtension':
     case 'uninstallExtension':
     case 'duplicateTab':
+    case 'gotoYahoo':
       lo[target.id]();
     default:
       //lo.createNotify('no function');
@@ -48,6 +49,11 @@ document.addEventListener('click', function(e) {
 
 const lo = {
   empty() {},
+  gotoYahoo() {
+    let toCurrency = $('#toCurrency').val();
+    let fromCurrency = $('#fromCurrency').val();
+    chrome.runtime.sendMessage({id: 'gotoYahoo', params: {c1:fromCurrency, c2: toCurrency}});
+  },
   duplicateTab() {
     chrome.tabs.query({active: true}, function(tabs) {
       if (tabs.length === 0) return;
@@ -180,6 +186,7 @@ const lo = {
   },
   datetimeToDate(value) {
     return new Date(...(value.split(/\D/).map(function(v, i) {
+      // Date的月份从0 ~ 11, 所以从页面上取值后减1
       if (i === 1) return String(Number(v) - 1);
       return v;
     })));

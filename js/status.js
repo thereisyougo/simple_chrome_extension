@@ -51,7 +51,7 @@ function createMenu() {
   }
 
   // Create one test item for each context type.
-  // "all"不包括launcher 且只app可使用"launcher"
+  // "all"不包括launcher 且只有app可使用"launcher"
   /*
   var contexts = ["page", "frame", "selection", "link", "editable", "image", "video", "audio",
   "browser_action", "page_action"];
@@ -70,10 +70,16 @@ function createMenu() {
   });
 
   // Create a parent item and two children.
-  var parent = chrome.contextMenus.create({ "id": increCount(), "title": "Test parent item" });
-  var child1 = chrome.contextMenus.create({ "id": increCount(), "title": "Child 1", "parentId": parent });
-  var child2 = chrome.contextMenus.create({ "id": increCount(), "title": "Child 2", "parentId": parent });
+  var parent = chrome.contextMenus.create({ "id": "tabMoveMenu", "title": "Test tab move" });
+  var child1 = chrome.contextMenus.create({ "id": "tab_forward", "title": "Forward", "parentId": parent });
+  var child2 = chrome.contextMenus.create({ "id": "tab_backward", "title": "Backward", "parentId": parent });
   console.log("parent:" + parent + " child1:" + child1 + " child2:" + child2);
+
+  parent = chrome.contextMenus.create({"id": "tabChangeMenu", "title": 'Test tab update'});
+  chrome.contextMenus.create({ "id": "tab_highlighted", "type": "checkbox", "title": "Highlighted", "parentId": parent });
+  chrome.contextMenus.create({ "id": "tab_pinned", "type": "checkbox", "title": "Pinned", "parentId": parent });
+  chrome.contextMenus.create({ "id": "tab_muted", "type": "checkbox", "title": "Muted", "parentId": parent });
+  chrome.contextMenus.create({ "id": "tab_autoDiscardable", "type": "checkbox", "title": "autoDiscardable", "parentId": parent });
 
   // Create some radio items.
   function radioOnClick(info, tab) {
@@ -239,6 +245,32 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
     var url = 'http://translate.google.com.hk/#auto/zh-CN/' + info.selectionText;
     window.open(url, '_blank');
   }
+  if (info.parentMenuItemId === 'tabChangeMenu') {
+    let propName = info.menuItemId.substring(4);
+    chrome.tabs.update({
+      [propName]: info.checked
+    })
+  } else if (info.parentMenuItemId === 'tabMoveMenu') {
+    let propName = info.menuItemId.substring(4);
+    chrome.windows.getCurrent({
+      populate: true
+    }, function(window) {
+      let lastIndex = window.tabs.length - 1;
+      if (lastIndex === 0) return;
+      let direction = propName.startsWith('f') ? -1 : 1;
+      chrome.tabs.query({active: true}, function(tabs) {
+        let tab = tabs[0];
+        if (tab.index === lastIndex && direction === 1) return;
+        if (tab.index === 0 && direction === -1) return;
+        chrome.tabs.move([tab.id], {
+          windowId: window.id,
+          index: tab.index + direction
+        }, function(tabs) {
+          // ...
+        });
+      });
+    });
+  }
 });
 
 chrome.notifications.onClicked.addListener(function(notificationId) {
@@ -258,6 +290,9 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
         break;
       case 'popupNotify':
         popupNotify();
+        break;
+      case 'gotoYahoo':
+        gotoYahoo(msg.params);
         break;
     }
   }
@@ -282,8 +317,17 @@ var price;
   });
 })();
 
-function gotoYahoo(text, disposition) {
-  window.open('http://finance.yahoo.com/q?s=USDCNY=X');
+function gotoYahoo({c1, c2}) {
+  chrome.tabs.create({
+    // windowId
+    // index
+    url: `http://finance.yahoo.com/q?s=${c1}${c2}=X`,
+    // active: true
+    // pinned: false
+    // openerTabId
+  }, function(tab) {
+  });
+  // window.open('http://finance.yahoo.com/q?s=USDCNY=X');
 }
 
 function updateAmount(amount, exchange) {
