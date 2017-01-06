@@ -1,13 +1,13 @@
-onBeforeRequest（可选的同步）
+onBeforeRequest（可选为同步）
 请求即将发生，建立TCP连接前，可用于取消或重定向请求
-onBeforeSendHeaders（可选的同步）
+onBeforeSendHeaders（可选为同步）
 请求即将发生且Headers已被初始化，允许扩展去增加、修改、删除请求头
 事件对象将传递给所有的事件订阅都，所以不同的订阅者可能尝试去修改请求
 这个事件也可以被用来取消请求
 onSendHeaders
-Fires after all extensions have had a chance to modify the request headers, and presents the final (*) version. The event is triggered before the headers are sent to the network. This event is informational and handled asynchronously. It does not allow modifying or cancelling the request.
-onHeadersReceived (optionally synchronous)
-Fires each time that an HTTP(S) response header is received. Due to redirects and authentication requests this can happen multiple times per request. This event is intended to allow extensions to add, modify, and delete response headers, such as incoming Set-Cookie headers. The caching directives are processed before this event is triggered, so modifying headers such as Cache-Control has no influence on the browser's cache. It also allows you to redirect the request.
+在所有的扩展获得一个修改请求头的机会后触发，表现为最终(*)的请求发送版本，在Header发送至网络前事件被触发。事件信息化且异步处理。这里不允许修改或取消请求
+onHeadersReceived（可选为同步）
+在每次接收到HTTP(S)响应时触发，诸如重定向和认证请求可能在每次请求会发生多次。这个事件被用来增加，修改和删除响应头信息，如服务器回传的Set-Cookie头信息在事件触发之前缓存指令将得到执行，所以像修改Cache-Control这类头信息并不影响到浏览器缓存。它也允许你重定向请求
 onAuthRequired (optionally synchronous)
 Fires when a request requires authentication of the user. This event can be handled synchronously to provide authentication credentials. Note that extensions may provide invalid credentials. Take care not to enter an infinite loop by repeatedly providing invalid credentials.
 onBeforeRedirect
