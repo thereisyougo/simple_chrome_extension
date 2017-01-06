@@ -8,19 +8,24 @@ onSendHeaders
 在所有的扩展获得一个修改请求头的机会后触发，表现为最终(*)的请求发送版本，在Header发送至网络前事件被触发。事件信息化且异步处理。这里不允许修改或取消请求
 onHeadersReceived（可选为同步）
 在每次接收到HTTP(S)响应时触发，诸如重定向和认证请求可能在每次请求会发生多次。这个事件被用来增加，修改和删除响应头信息，如服务器回传的Set-Cookie头信息在事件触发之前缓存指令将得到执行，所以像修改Cache-Control这类头信息并不影响到浏览器缓存。它也允许你重定向请求
-onAuthRequired (optionally synchronous)
-Fires when a request requires authentication of the user. This event can be handled synchronously to provide authentication credentials. Note that extensions may provide invalid credentials. Take care not to enter an infinite loop by repeatedly providing invalid credentials.
+onAuthRequired (可选为同步)
+当一个请求需要取得用户认证信息时触发，该事件可被用于同步的处理受权认证
+注意扩展可能提供了一个错误的认证请求，所以要防止这里出现一再认证失败的情况
 onBeforeRedirect
-Fires when a redirect is about to be executed. A redirection can be triggered by an HTTP response code or by an extension. This event is informational and handled asynchronously. It does not allow you to modify or cancel the request.
+在重定向即将发生时触发，一个重定向可以被HTTP响应代码或一个扩展触发。该事件是信息化的且是异步处理的。不允许修改或取消请求
 onResponseStarted
-Fires when the first byte of the response body is received. For HTTP requests, this means that the status line and response headers are available. This event is informational and handled asynchronously. It does not allow modifying or cancelling the request.
+当从响应体里接受到第一个字节时触发。对于HTTP请求来说，此时的状态行与响应头都是有效的。该事件是信息化的且是异步处理的。。不允许修改或取消请求
 onCompleted
-Fires when a request has been processed successfully.
+当一个请求处理成功时触发
 onErrorOccurred
-Fires when a request could not be processed successfully.
-The web request API guarantees that for each request either onCompleted or onErrorOccurred is fired as the final event with one exception: If a request is redirected to a data:// URL, onBeforeRedirect is the last reported event.
-(*) Note that the web request API presents an abstraction of the network stack to the extension. Internally, one URL request can be split into several HTTP requests (for example to fetch individual byte ranges from a large file) or can be handled by the network stack without communicating with the network. For this reason, the API does not provide the final HTTP headers that are sent to the network. For example, all headers that are related to caching are invisible to the extension.
+当一个请求无法被成功处理时触发
 
+web request api保证每一个请求最终都会去触发onCompleted或onErrorOccurred事件，除了
+在一个重定向请求到URL为data://的地址时，onBeforeRedirect将作为最后的事件被触发
+
+(*)注意web request api对扩展来说它只一个对网络栈的抽象
+在内部，一个URL的请求可被划分为数个HTTP请求（如从一个大文件中每次获取一定量的数据）或可以由网络堆栈处理而不与网络通信
+因为这个原因，api无法提供最终发送到网络中的头信息，如与缓存相关的头信息对扩展是不可见的
 
 
 
