@@ -29,9 +29,9 @@
     "<all_urls>",
     "history",
     "management",
-    "clipboardWrite",
-    "webRequest",
-    "webRequestBlocking"
+    "clipboardWrite"
+    //"webRequest",
+    //"webRequestBlocking"
   ],
   "options_ui": {
     "page": "options.html",

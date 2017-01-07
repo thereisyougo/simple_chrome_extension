@@ -27,7 +27,45 @@ web request api保证每一个请求最终都会去触发onCompleted或onErrorOc
 在内部，一个URL的请求可被划分为数个HTTP请求（如从一个大文件中每次获取一定量的数据）或可以由网络堆栈处理而不与网络通信
 因为这个原因，api无法提供最终发送到网络中的头信息，如与缓存相关的头信息对扩展是不可见的
 
+以下的Headers无法在onBeforeSendHeaders事件中提供，这份列表不一定完整且是稳定的
+Authorization
+Cache-Control
+Connection
+Content-Length
+Host
+If-Modified-Since
+If-None-Match
+If-Range
+Partial-Data
+Pragma
+Proxy-Authorization
+Proxy-Connection
+Transfer-Encoding
 
+使用webRequest api需要相应的权限，且只有以下协议可以被访问
+http://, https://, ftp://, file://, or chrome-extension://
+有时候甚至会隐藏具有使用上述方案之一的URL的某些请求
+又chrome-extension://other_extension_id引用一个不存在的扩展ID时
+来自扩展的同步XMLHTTPRequests请求会被阻塞事件处理器屏蔽，以防死锁
+部分受支持的协议可能有部分事件会受到相应协议自己的限制
+如文件协议file:仅有onBeforeRequest, onResponseStarted, onCompleted, and onErrorOccurred可被分派
+
+概念
+如下所说，web request api中的事件使用请求ID，当你在注册事件监听器时可选的指定过滤器和额外信息
+Request IDs
+每个请求由request ID标识，这个ID在当前浏览器会话和扩展上下文中保持唯一，在整个请求周期内保持不变
+而且可用于匹配与同一个请求关联的其他事件。注意出现HTTP重定向或HTTP认证时，会将几个HTTP请求映射到一个Web请求
+Registering event listeners
+为WEB请求注册一个监听器，通常使用变量上的addListener()函数，指定一个回调，
+必须指定一个过滤器参数，还可以指定一个可选的额外信息参数
+如：
+var callback = function(details) {...};
+var filter = {...};
+var opt_extraInfoSpec = [...];
+chrome.webRequest.onBeforeRequest.addListener(callback, filter, opt_extraInfoSpec);
+每个addListener的第一个参数强制性规定必须是一个回调
+这个回调被传递给一个包含当前URL请求信息的字典
+此字典中的信息取决于特定的事件类型以及opt_extraInfoSpec的内容
 
 实现细节
 有几个实现细节理解可能对web request api的开发比较重要
@@ -57,3 +95,6 @@ timestamp作为web request event的属性仅用于保证其内部一致性
 如果尝试使用无效的参数注册一个事件，将抛出一个异常，且事件注册失败
 如果是事件在被处理时抛出了异常或者是事件处理器返回了一个无效的阻塞响应
 一个错误消息将记录在你的扩展程序的控制台里，且请求的处理将被忽略
+
+webRequest接口无法在Event Page中使用
+阻止网络请求，需要声明webRequestBlocking权限
