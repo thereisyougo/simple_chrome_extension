@@ -188,6 +188,66 @@ function createNotify(msg, title = 'TIPS') {
   });
 }
 
+function activeAlarm(name, alarmInfo) {
+  // chrome.alarms.create(name, alarmInfo);
+}
+
+function downloadNode() {
+  var newTabId;
+  function myListener2(tabId, info, tab) {
+    if (tab.status === 'complete' && tabId === newTabId) {
+      chrome.tabs.executeScript(tabId, {
+        code: '[].map.call(document.links, it=>it.href).filter(item=>/-x64.msi$/.test(item))'
+      }, function(results) {
+        let result = results[0];
+        chrome.downloads.download({
+          url: result[0],
+          conflictAction: 'overwrite'
+        }, function(downloadId) {
+          console.info(downloadId);
+          chrome.tabs.remove(tabId);
+        });
+      });
+      chrome.tabs.onUpdated.removeListener(myListener2);
+    }
+  }
+  function myListener(tabId, info, tab) {
+    if (tab.status === 'complete' && tabId === newTabId) {
+      chrome.tabs.executeScript(tabId, {
+        code: '[].map.call(document.links, it=>it.href)'
+      }, function(results) {
+        //console.info(results);
+        let allversions = results[0].filter(link=>/v[0-9\.]+\/$/.test(link)).map(function(link) {
+          return link.match(/v[0-9\.]+/)[0].substring(1);
+        }).sort(function(a, b) {
+          let x = a.split(/\./),
+              y = b.split(/\./);
+          return y[0] - x[0] || y[1] - x[1] || y[2] - x[2]
+        });
+        chrome.tabs.executeScript(tabId, {
+          code: `[].filter.call(document.links, it=>new RegExp("v${allversions[0]}").test(it.href)).map(link=>link.href)`
+        }, function(rs) {
+          let result = rs[0];
+          chrome.tabs.onUpdated.addListener(myListener2);
+          chrome.tabs.update(tabId, {
+            url: result[0]
+          }, function(tab) {
+            newTabId = tab.id;
+          });
+        })
+      });
+      chrome.tabs.onUpdated.removeListener(myListener);
+    }
+  }
+  chrome.tabs.onUpdated.addListener(myListener);
+  chrome.tabs.create({
+    url: 'https://nodejs.org/dist/',
+    active: true
+  }, function(tab) {
+    newTabId = tab.id;
+  });
+}
+
 
 function $(id) {
   return {
@@ -281,6 +341,7 @@ chrome.notifications.onButtonClicked.addListener(function(notificationId, button
 });
 
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
+  console.info(msg);
   if (msg.id) {
     switch (msg.id) {
       case 'transbygoo':
@@ -293,6 +354,27 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
         break;
       case 'gotoYahoo':
         gotoYahoo(msg.params);
+        break;
+      case 'alarm':
+        activeAlarm(msg.name, msg.alarmInfo);
+        break;
+      case 'cpu':
+        chrome.system.cpu.getInfo(function(info) {
+          sendResponse(info);
+        });
+        return true;
+      case 'memory':
+        chrome.system.memory.getInfo(function(info) {
+          sendResponse(info);
+        });
+        return true;
+      case 'storage':
+        chrome.system.storage.getInfo(function(info) {
+          sendResponse(info);
+        });
+        return true;
+      case 'download_node':
+        downloadNode();
         break;
     }
   }
@@ -410,3 +492,7 @@ chrome.management.onEnabled.addListener(function(exInfo) {
 chrome.management.onDisabled.addListener(function(exInfo) {
   console.log('Extension '+exInfo.id+' has been disabled.');
 });
+
+/*chrome.alarms.onAlarm.addListener(function(alarm) {
+    console.log('Alarm info ', alarm);
+});*/

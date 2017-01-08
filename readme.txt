@@ -67,6 +67,9 @@ chrome.webRequest.onBeforeRequest.addListener(callback, filter, opt_extraInfoSpe
 这个回调被传递给一个包含当前URL请求信息的字典
 此字典中的信息取决于特定的事件类型以及opt_extraInfoSpec的内容
 
+如果可选的opt_extraInfoSpec数组包括'blocking'字符串（仅允许在特定的事件中），则回调是将被同步处理
+意思是请求将被阻塞直到回调返回，既然这样，回调可以返回一个webRequest.BlockingResponse用于确定请求近一步的生命周期
+
 实现细节
 有几个实现细节理解可能对web request api的开发比较重要
 

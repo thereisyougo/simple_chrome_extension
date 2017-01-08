@@ -29,7 +29,12 @@
     "<all_urls>",
     "history",
     "management",
-    "clipboardWrite"
+    "clipboardWrite",
+    "alarms",
+    "system.cpu",
+    "system.memory",
+    "system.storage",
+    "downloads"
     //"webRequest",
     //"webRequestBlocking"
   ],

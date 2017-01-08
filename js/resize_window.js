@@ -39,6 +39,11 @@ document.addEventListener('click', function(e) {
     case 'uninstallExtension':
     case 'duplicateTab':
     case 'gotoYahoo':
+    case 'alarm':
+    case 'cpu':
+    case 'memory':
+    case 'storage':
+    case 'nodedist':
       lo[target.id]();
     default:
       //lo.createNotify('no function');
@@ -49,6 +54,33 @@ document.addEventListener('click', function(e) {
 
 const lo = {
   empty() {},
+  nodedist() {
+    chrome.runtime.sendMessage({id: 'download_node'}, function(response) {
+
+    });
+  },
+  memory() {
+    chrome.runtime.sendMessage({id: 'memory'}, function(response) {
+      lo.createNotify3({obj: response});
+    });
+  },
+  storage() {
+    chrome.runtime.sendMessage({id: 'storage'}, function(response) {
+      lo.createNotify3({obj: response});
+    });
+  },
+  cpu() {
+    chrome.runtime.sendMessage({id: 'cpu'}, function(response) {
+      lo.createNotify3({obj: response});
+    })
+  },
+  alarm() {
+    chrome.runtime.sendMessage({id: 'alarm', name: 'self_alarm', alarmInfo: {
+        when : 1000 * 3,
+        //delayInMinutes: 0,
+        periodInMinutes: 60
+    }});
+  },
   gotoYahoo() {
     let toCurrency = $('#toCurrency').val();
     let fromCurrency = $('#fromCurrency').val();
@@ -56,10 +88,17 @@ const lo = {
   },
   duplicateTab() {
     chrome.tabs.query({active: true}, function(tabs) {
-      if (tabs.length === 0) return;
-      chrome.tabs.duplicate(tabs[0].id, function(tab) {
-        lo.createNotify('current tab has been duplicated');
+      // if (tabs.length === 0) return;
+      chrome.windows.getCurrent({populate: true}, function(win) {
+        let activeTabs = tabs.map(t=>t.id);
+        let currentTab = win.tabs.find(function(item) {
+          return activeTabs.includes(item.id)
+        });
+        chrome.tabs.duplicate(currentTab.id, function(tab) {
+          lo.createNotify('current tab has been duplicated');
+        });
       });
+      
     })
   },
   uninstallExtension() {
@@ -373,7 +412,7 @@ const lo = {
     let dateString = d.toISOString();
     return dateString.substring(0, dateString.length - 8);
   },
-  createNotify(msg, title = 'TIPS', contextMessage) {
+  createNotify(msg, title = '\u63d0\u793a', contextMessage) {
     chrome.notifications.create('sampleNotify' + increCount(), {
       iconUrl: 'images/ic_star_border_black_48dp_1x.png',
       title: title,
@@ -381,6 +420,40 @@ const lo = {
       contextMessage: contextMessage,
       type: 'basic'
     });
+  },
+  createNotify2(msg) {
+    Notification.requestPermission().then(function(result) {
+      if (result === 'denied') {
+        lo.createNotify('Permission wasn\'t granted. Allow a retry.');
+        return;
+      }
+      if (result === 'default') {
+        lo.createNotify('The permission request was dismissed.');
+        return;
+      }
+      new Notification('\u63d0\u793a', {
+        icon: 'images/ic_star_border_black_48dp_1x.png',
+        body: msg
+      })
+    });
+  },
+  createNotify3({msg = '', title = '\u63d0\u793a', obj = {}, extraOptions = {}}) {
+    if (Object.keys(obj).length === 0) {
+      lo.createNotify('obj is empty')
+      return;
+    }
+    let listOptions = {
+      type: 'list',
+      items: Object.keys(obj).map(function(name) {
+        return {title: name, message: JSON.stringify(obj[name])}
+      })
+    };
+    chrome.notifications.create('sampleNotify' + increCount(), $.extend({
+      iconUrl: 'images/ic_star_border_black_48dp_1x.png',
+      title: title,
+      message: msg,
+      type: 'basic'
+    }, listOptions));
   }
 }
 
