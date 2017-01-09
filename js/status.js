@@ -242,7 +242,7 @@ function downloadNode() {
   chrome.tabs.onUpdated.addListener(myListener);
   chrome.tabs.create({
     url: 'https://nodejs.org/dist/',
-    active: true
+    active: false
   }, function(tab) {
     newTabId = tab.id;
   });
