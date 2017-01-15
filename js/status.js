@@ -145,7 +145,7 @@ function popupNotify() {
     }, {
       title: 'ccc',
       iconUrl: 'images/ic_star_black_48dp_1x.png'
-    }],
+    }]
     //imageUrl: 'images/logo.png'
     /*items: [{
       title: 'aaa',
@@ -178,7 +178,7 @@ function popupNotify() {
   });
 }
 
-function createNotify(msg, title = 'TIPS') {
+function createNotify(msg, title = chrome.i18n.getMessage('hint')) {
   chrome.notifications.create('sampleNotify' + increCount(), {
     iconUrl: 'images/ic_star_border_black_48dp_1x.png',
     title: title,
@@ -380,9 +380,9 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
   }
 });
 
-chrome.omnibox.setDefaultSuggestion({
+/*chrome.omnibox.setDefaultSuggestion({
   description: '<match>%s</match>'
-});
+});*/
 
 
 var url = 'https://query.yahooapis.com/v1/public/yql?q=SELECT%20*%20FROM%20yahoo.finance.xchange%20where%20pair%20%3D%20%27USDCNY%27&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&diagnostics=false&format=xml';
@@ -463,6 +463,7 @@ chrome.omnibox.onInputChanged.addListener(function(text, suggest) {
 
 chrome.omnibox.onInputEntered.addListener(function(text, onInputEnteredDisposition) {
   // "currentTab", "newForegroundTab", or "newBackgroundTab"
+  console.info(text, onInputEnteredDisposition);
   chrome.tabs.query({
     active: true
   }, function(tabs) {

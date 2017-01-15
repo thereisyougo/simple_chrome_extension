@@ -1,0 +1,17 @@
+{
+  "hint": {
+    "message": "$head$HINT$tail$$extra$",
+    "placeholders": {
+      "head": {
+        "content": "["
+      },
+      "tail": {
+        "content": "]"
+      },
+      "extra": {
+        "content": "$1",
+        "example": " - "
+      }
+    }
+  }
+}

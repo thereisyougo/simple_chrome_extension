@@ -1,0 +1,17 @@
+{
+  "hint": {
+    "message": "$head$\u63d0\u793a$tail$$extra$",
+    "placeholders": {
+      "head": {
+        "content": "\u3010"
+      },
+      "tail": {
+        "content": "\u3011"
+      },
+      "extra": {
+        "content": "$1",
+        "example": " - "
+      }
+    }
+  }
+}

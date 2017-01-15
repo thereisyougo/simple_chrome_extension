@@ -412,7 +412,7 @@ const lo = {
     let dateString = d.toISOString();
     return dateString.substring(0, dateString.length - 8);
   },
-  createNotify(msg, title = '\u63d0\u793a', contextMessage) {
+  createNotify(msg, title = chrome.i18n.getMessage('hint'), contextMessage) {
     chrome.notifications.create('sampleNotify' + increCount(), {
       iconUrl: 'images/ic_star_border_black_48dp_1x.png',
       title: title,
@@ -431,13 +431,13 @@ const lo = {
         lo.createNotify('The permission request was dismissed.');
         return;
       }
-      new Notification('\u63d0\u793a', {
+      new Notification(chrome.i18n.getMessage('hint'), {
         icon: 'images/ic_star_border_black_48dp_1x.png',
         body: msg
       })
     });
   },
-  createNotify3({msg = '', title = '\u63d0\u793a', obj = {}, extraOptions = {}}) {
+  createNotify3({msg = '', title = chrome.i18n.getMessage('hint'), obj = {}, extraOptions = {}}) {
     if (Object.keys(obj).length === 0) {
       lo.createNotify('obj is empty')
       return;
