@@ -192,12 +192,12 @@ function activeAlarm(name, alarmInfo) {
   // chrome.alarms.create(name, alarmInfo);
 }
 
-function downloadNode() {
+function downloadNode(arch) {
   var newTabId;
   function myListener2(tabId, info, tab) {
     if (tab.status === 'complete' && tabId === newTabId) {
       chrome.tabs.executeScript(tabId, {
-        code: '[].map.call(document.links, it=>it.href).filter(item=>/-x64.msi$/.test(item))'
+        code: `[].map.call(document.links, it=>it.href).filter(item=>/-x${arch}.msi$/.test(item))`
       }, function(results) {
         let result = results[0];
         chrome.downloads.download({
@@ -374,7 +374,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
         });
         return true;
       case 'download_node':
-        downloadNode();
+        downloadNode(msg.arch | '64');
         break;
     }
   }
@@ -441,11 +441,17 @@ chrome.omnibox.onInputStarted.addListener(function() {
 
 chrome.omnibox.onInputChanged.addListener(function(text, suggest) {
   // suggest([]SuggestResult)
-  if (text === 'v') {
+  /*if (text === 'v') {
     suggest([{
       content: 'http://www.verycd.com',
       description: '<match>V</match>ERYCD<dim>.COM</dim> - <url>http://www.verycd.com</url>'
     }]);
+  }*/ 
+  if (text !== '') {
+    suggest([{
+      content: `https://cdict.net/q/${text}`,
+      description: `Query Word: <match>${text}</match>`
+    }])
   } else if (text.startsWith('msg:') && text.indexOf('{', 4) < text.lastIndexOf('}')) {
     let msg = /\{([^\}]*)\}/.exec(text)[1];
     if (msg.trim() !== '') {

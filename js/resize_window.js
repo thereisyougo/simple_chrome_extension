@@ -44,7 +44,7 @@ document.addEventListener('click', function(e) {
     case 'memory':
     case 'storage':
     case 'nodedist':
-      lo[target.id]();
+      lo[target.id](target.dataset);
     default:
       //lo.createNotify('no function');
   }
@@ -55,7 +55,7 @@ document.addEventListener('click', function(e) {
 const lo = {
   empty() {},
   nodedist() {
-    chrome.runtime.sendMessage({id: 'download_node'}, function(response) {
+    chrome.runtime.sendMessage(_.assign({id: 'download_node'}, arguments[0]), function(response) {
 
     });
   },
