@@ -44,6 +44,7 @@ document.addEventListener('click', function(e) {
     case 'memory':
     case 'storage':
     case 'nodedist':
+    case 'bravo':
       lo[target.id](target.dataset);
     default:
       //lo.createNotify('no function');
@@ -54,10 +55,11 @@ document.addEventListener('click', function(e) {
 
 const lo = {
   empty() {},
+  bravo() {
+    chrome.runtime.sendMessage(_.assign({id: 'download_bravo_images'}, arguments[0]), function(response) {});
+  },
   nodedist() {
-    chrome.runtime.sendMessage(_.assign({id: 'download_node'}, arguments[0]), function(response) {
-
-    });
+    chrome.runtime.sendMessage(_.assign({id: 'download_node'}, arguments[0]), function(response) {});
   },
   memory() {
     chrome.runtime.sendMessage({id: 'memory'}, function(response) {

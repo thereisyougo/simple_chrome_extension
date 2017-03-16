@@ -71,9 +71,11 @@ function createMenu() {
 
   // Create a parent item and two children.
   var parent = chrome.contextMenus.create({ "id": "tabMoveMenu", "title": "Test tab move" });
-  var child1 = chrome.contextMenus.create({ "id": "tab_forward", "title": "Forward", "parentId": parent });
-  var child2 = chrome.contextMenus.create({ "id": "tab_backward", "title": "Backward", "parentId": parent });
-  console.log("parent:" + parent + " child1:" + child1 + " child2:" + child2);
+  var child1 = chrome.contextMenus.create({ "id": "tab_move2first", "title": "First", "parentId": parent });
+  var child2 = chrome.contextMenus.create({ "id": "tab_forward", "title": "Forward", "parentId": parent });
+  var child3 = chrome.contextMenus.create({ "id": "tab_backward", "title": "Backward", "parentId": parent });
+  var child4 = chrome.contextMenus.create({ "id": "tab_move2last", "title": "Last", "parentId": parent });
+  //console.log("parent:" + parent + " child1:" + child1 + " child2:" + child2);
 
   parent = chrome.contextMenus.create({"id": "tabChangeMenu", "title": 'Test tab update'});
   chrome.contextMenus.create({ "id": "tab_highlighted", "type": "checkbox", "title": "Highlighted", "parentId": parent });
@@ -248,6 +250,49 @@ function downloadNode(arch) {
   });
 }
 
+function downloadBravoImages() {
+  chrome.tabs.executeScript({
+    code: '[].map.call(document.querySelectorAll(".thumb_box"), function(el){ return [].map.call(el.querySelectorAll("a"), function(link){ return link.href; }); }).reduce(function(a,b) { return a.concat(b) })'
+  }, function(results) {
+    if (results.length) {
+      let pages = results[0], counter = pages.length;
+      let allTabs = [];
+
+      function myListener(tabId, info, tab) {
+        if (tab.status === 'complete' && allTabs.includes(tabId)) {
+          chrome.tabs.executeScript(tabId, {
+            code: 'document.images[0].src'
+          }, function(results) {
+            if (results.length) {
+              chrome.downloads.download({
+                url: results[0],
+                conflictAction: 'uniquify'
+              }, function(downloadId) {
+                console.info(downloadId);
+                chrome.tabs.remove(tabId);
+              });
+            }
+            console.info(results[0]);
+          });
+          counter--;
+          if (counter === 0)
+            chrome.tabs.onUpdated.removeListener(myListener);
+        }
+      }
+      chrome.tabs.onUpdated.addListener(myListener);
+
+      pages.forEach(function(pageUrl) {
+        chrome.tabs.create({
+          url: pageUrl,
+          active: false
+        }, function(tab) {
+          allTabs.push(tab.id);
+        });
+      });
+    }
+  })
+}
+
 
 function $(id) {
   return {
@@ -317,14 +362,15 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
     }, function(window) {
       let lastIndex = window.tabs.length - 1;
       if (lastIndex === 0) return;
-      let direction = propName.startsWith('f') ? -1 : 1;
+      let absolute = false;
+      let direction = propName.startsWith('f') ? -1 : propName.endsWith('first') ? (absolute = true, 0) : propName.endsWith('last') ? (absolute = true, lastIndex) : 1;
       chrome.tabs.query({active: true}, function(tabs) {
         let tab = tabs[0];
         if (tab.index === lastIndex && direction === 1) return;
         if (tab.index === 0 && direction === -1) return;
         chrome.tabs.move([tab.id], {
           windowId: window.id,
-          index: tab.index + direction
+          index: absolute ? direction : tab.index + direction
         }, function(tabs) {
           // ...
         });
@@ -376,6 +422,9 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
       case 'download_node':
         downloadNode(msg.arch | '64');
         break;
+      case 'download_bravo_images':
+        downloadBravoImages();
+        break;
     }
   }
 });
@@ -412,25 +461,25 @@ function gotoYahoo({c1, c2}) {
   // window.open('http://finance.yahoo.com/q?s=USDCNY=X');
 }
 
-function updateAmount(amount, exchange) {
+function updateAmount(amount, suggests) {
   if (!price) return;
   amount = Number(amount);
   if (isNaN(amount) || !amount) {
-    exchange([{
+    suggests.push({
       'content': '$1 = ¥' + price.toFixed(4),
       'description': '$1 = ¥' + price.toFixed(4)
     }, {
       'content': '¥1 = $' + (1 / price).toFixed(6),
       'description': '¥1 = $' + (1 / price).toFixed(6)
-    }]);
+    });
   } else {
-    exchange([{
+    suggests.push({
       'content': '$' + amount + ' = ¥' + (amount * price).toFixed(4),
       'description': '$' + amount + ' = ¥' + (amount * price).toFixed(4)
     }, {
       'content': '¥' + amount + ' = $' + (amount / price).toFixed(6),
       'description': '¥' + amount + ' = $' + (amount / price).toFixed(6)
-    }]);
+    });
   }
 }
 
@@ -446,25 +495,27 @@ chrome.omnibox.onInputChanged.addListener(function(text, suggest) {
       content: 'http://www.verycd.com',
       description: '<match>V</match>ERYCD<dim>.COM</dim> - <url>http://www.verycd.com</url>'
     }]);
-  }*/ 
-  if (text !== '') {
-    suggest([{
-      content: `https://cdict.net/q/${text}`,
-      description: `Query Word: <match>${text}</match>`
-    }])
-  } else if (text.startsWith('msg:') && text.indexOf('{', 4) < text.lastIndexOf('}')) {
+  }*/
+  let suggests = [];
+  if (text.startsWith('msg:') && text.indexOf('{', 4) < text.lastIndexOf('}')) {
     let msg = /\{([^\}]*)\}/.exec(text)[1];
     if (msg.trim() !== '') {
       createNotify(msg);
     }
   } else if (text.startsWith('moz:')) {
-    suggest([{
+    suggests.push({
       content: `https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/${text.substring(4)}`,
       description: 'MOZ JAVASCRIPT DOC'
-    }])
+    });
   } else if (!isNaN(text)) {
-    updateAmount(text, suggest);
+    updateAmount(text, suggests);
   }
+  suggests.push({
+    content: `https://cdict.net/q/${text}`,
+    description: `Query Word: <match>${text}</match>`
+  });
+
+  suggest(suggests);
 });
 
 chrome.omnibox.onInputEntered.addListener(function(text, onInputEnteredDisposition) {
