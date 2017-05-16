@@ -68,6 +68,12 @@ function createMenu() {
     contexts: ['selection'],
     type: 'normal'
   });
+  chrome.contextMenus.create({
+    id: 'transbyyoudao',
+    title: '使用YouDao解释',
+    contexts: ['selection'],
+    type: 'normal'
+  });
 
   // Create a parent item and two children.
   var parent = chrome.contextMenus.create({ "id": "tabMoveMenu", "title": "Test tab move" });
@@ -349,8 +355,10 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
   if (info.menuItemId === 'transbygoo') {
     var url = 'http://translate.google.com.hk/#auto/zh-CN/' + info.selectionText;
     window.open(url, '_blank');
-  }
-  if (info.parentMenuItemId === 'tabChangeMenu') {
+  } else if (info.menuItemId === 'transbyyoudao') {
+    let text = info.selectionText;
+    window.open(`http://dict.youdao.com/w/${text}`, '_blank');
+  } else if (info.parentMenuItemId === 'tabChangeMenu') {
     let propName = info.menuItemId.substring(4);
     chrome.tabs.update({
       [propName]: info.checked
@@ -513,6 +521,9 @@ chrome.omnibox.onInputChanged.addListener(function(text, suggest) {
   suggests.push({
     content: `https://cdict.net/q/${text}`,
     description: `Query Word: <match>${text}</match>`
+  }, {
+    content: `http://dict.youdao.com/w/${text}`,
+    description: `YouDao Query Word: <match>${text}</match>`
   });
 
   suggest(suggests);
