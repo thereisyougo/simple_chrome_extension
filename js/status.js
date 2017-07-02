@@ -260,31 +260,32 @@ function downloadBravoImages() {
   chrome.tabs.executeScript({
     code: '[].map.call(document.querySelectorAll(".thumb_box"), function(el){ return [].map.call(el.querySelectorAll("a"), function(link){ return link.href; }); }).reduce(function(a,b) { return a.concat(b) })'
   }, function(results) {
+    function myListener(tabId, info, tab) {
+      if (tab.status === 'complete' && allTabs.includes(tabId)) {
+        chrome.tabs.executeScript(tabId, {
+          code: 'document.images[0].src'
+        }, function(results) {
+          if (results.length) {
+            chrome.downloads.download({
+              url: results[0],
+              conflictAction: 'uniquify'
+            }, function(downloadId) {
+              console.info(downloadId);
+              chrome.tabs.remove(tabId);
+            });
+          }
+          console.info(results[0]);
+        });
+        counter--;
+        if (counter === 0)
+          chrome.tabs.onUpdated.removeListener(myListener);
+      }
+    }
     if (results.length) {
+      
       let pages = results[0], counter = pages.length;
       let allTabs = [];
 
-      function myListener(tabId, info, tab) {
-        if (tab.status === 'complete' && allTabs.includes(tabId)) {
-          chrome.tabs.executeScript(tabId, {
-            code: 'document.images[0].src'
-          }, function(results) {
-            if (results.length) {
-              chrome.downloads.download({
-                url: results[0],
-                conflictAction: 'uniquify'
-              }, function(downloadId) {
-                console.info(downloadId);
-                chrome.tabs.remove(tabId);
-              });
-            }
-            console.info(results[0]);
-          });
-          counter--;
-          if (counter === 0)
-            chrome.tabs.onUpdated.removeListener(myListener);
-        }
-      }
       chrome.tabs.onUpdated.addListener(myListener);
 
       pages.forEach(function(pageUrl) {
@@ -524,6 +525,9 @@ chrome.omnibox.onInputChanged.addListener(function(text, suggest) {
   }, {
     content: `http://dict.youdao.com/w/${text}`,
     description: `YouDao Query Word: <match>${text}</match>`
+  }, {
+    content: `http://man.he.net/?topic=${text}&section=all`,
+    description: `Linux manual about: <match>${text}</match>`
   });
 
   suggest(suggests);
