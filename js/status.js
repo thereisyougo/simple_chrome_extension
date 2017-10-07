@@ -204,8 +204,14 @@ function downloadNode(arch) {
   var newTabId;
   function myListener2(tabId, info, tab) {
     if (tab.status === 'complete' && tabId === newTabId) {
+      let pattern = `-x${arch}.msi$`;
+      let archStr = String(arch);
+      if (archStr.startsWith('mac')) {
+        pattern = (this.version + archStr.substring(3)).replace('.', '\\.') + '$';
+      }
+      console.info(pattern);
       chrome.tabs.executeScript(tabId, {
-        code: `[].map.call(document.links, it=>it.href).filter(item=>/-x${arch}.msi$/.test(item))`
+        code: `[].map.call(document.links, it=>it.href).filter(item=>/${pattern}/.test(item))`
       }, function(results) {
         let result = results[0];
         chrome.downloads.download({
@@ -213,8 +219,8 @@ function downloadNode(arch) {
           conflictAction: 'overwrite'
         }, function(downloadId) {
           console.info(downloadId);
-          chrome.tabs.remove(tabId);
         });
+        chrome.tabs.remove(tabId);
       });
       chrome.tabs.onUpdated.removeListener(myListener2);
     }
@@ -232,11 +238,12 @@ function downloadNode(arch) {
               y = b.split(/\./);
           return y[0] - x[0] || y[1] - x[1] || y[2] - x[2]
         });
+        let latestVersion = allversions[0];
         chrome.tabs.executeScript(tabId, {
-          code: `[].filter.call(document.links, it=>new RegExp("v${allversions[0]}").test(it.href)).map(link=>link.href)`
+          code: `[].filter.call(document.links, it=>new RegExp("v${latestVersion}").test(it.href)).map(link=>link.href)`
         }, function(rs) {
           let result = rs[0];
-          chrome.tabs.onUpdated.addListener(myListener2);
+          chrome.tabs.onUpdated.addListener(myListener2.bind({version: latestVersion}));
           chrome.tabs.update(tabId, {
             url: result[0]
           }, function(tab) {
@@ -429,7 +436,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
         });
         return true;
       case 'download_node':
-        downloadNode(msg.arch | '64');
+        downloadNode(msg.arch);
         break;
       case 'download_bravo_images':
         downloadBravoImages();
