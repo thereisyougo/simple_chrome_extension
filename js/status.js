@@ -450,16 +450,20 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
 });*/
 
 
-var url = 'https://query.yahooapis.com/v1/public/yql?q=SELECT%20*%20FROM%20yahoo.finance.xchange%20where%20pair%20%3D%20%27USDCNY%27&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&diagnostics=false&format=xml';
+// var url = 'https://query.yahooapis.com/v1/public/yql?q=SELECT%20*%20FROM%20yahoo.finance.xchange%20where%20pair%20%3D%20%27USDCNY%27&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&diagnostics=false&format=xml';
+var url = 'http://api.fixer.io/latest?base=USD&symbols=CNY';
 // http://finance.yahoo.com/quote/USDCNY=X?ltr=1
 // http://finance.yahoo.com/webservice/v1/symbols/allcurrencies/quote?format=xml
 var price;
 
 (function loadRate() {
   httpRequest(url, function(r) {
-    var doc = r.responseXML;
+    /*var doc = r.responseXML;
     var rate = doc.querySelector('Rate');
     price = Number(rate.textContent);
+    console.info(price);*/
+    var doc = JSON.parse(r.responseText);
+    price = Number(doc.rates.CNY);
     console.info(price);
   });
 })();

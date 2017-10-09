@@ -1,6 +1,7 @@
 const local = chrome.storage.local;
 const tabs = [];
-var translateCurrencyUrl = 'https://query.yahooapis.com/v1/public/yql?q=SELECT%20*%20FROM%20yahoo.finance.xchange%20where%20pair%20%3D%20%27{{ fromCurrency }}{{ toCurrency }}%27&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&diagnostics=false&format=xml';
+// var translateCurrencyUrl = 'https://query.yahooapis.com/v1/public/yql?q=SELECT%20*%20FROM%20yahoo.finance.xchange%20where%20pair%20%3D%20%27{{ fromCurrency }}{{ toCurrency }}%27&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&diagnostics=false&format=xml';
+var translateCurrencyUrl = 'http://api.fixer.io/latest?base={{ fromCurrency }}&symbols={{ toCurrency }}';
 
 
 document.addEventListener('click', function(e) {
@@ -166,6 +167,7 @@ const lo = {
     let url = Mustache.render(translateCurrencyUrl, {toCurrency, fromCurrency})
     // console.info(url);
     $.get(url, function(data) {
+      /*
       let rate = data.querySelector('Rate');
       lo.price = Number(rate.textContent)
       $('#resultCurrency').val(rate.textContent);
@@ -173,8 +175,16 @@ const lo = {
       if (Number(currentCount) > 0) {
         let r = Number($('#resultCurrency').val());
         $('#resultCurrency').val((Number(currentCount) * r).toFixed(4));
+      }*/
+      let rate = data.rates[toCurrency];
+      lo.price = Number(rate)
+      $('#resultCurrency').val(rate);
+      let currentCount = $('#countCurrency').val();
+      if (Number(currentCount) > 0) {
+        let r = Number($('#resultCurrency').val());
+        $('#resultCurrency').val((Number(currentCount) * r).toFixed(4));
       }
-    }, 'xml').fail(function(jqXHR, textStatus, errorThrown) {
+    }, 'json').fail(function(jqXHR, textStatus, errorThrown) {
       // console.info(arguments);
       lo.createNotify(textStatus);
     });
@@ -476,9 +486,10 @@ $(function() {
       local.set({currentTab: index});
     }
   });
-  $('#countCurrency').on('keyup mouseup', function(e) {
+  $('#countCurrency').on('keyup', function(e) {
     let target = e.target;
-    //console.info(target);
+    console.info(target);
+    // lo.createNotify('aaaa' + lo.price)
     if (lo.price !== 0) {
       $('#resultCurrency').val((Number(target.value).toFixed(4) * lo.price.toFixed(4)).toFixed(4))
     }
