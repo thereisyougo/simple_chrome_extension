@@ -486,7 +486,7 @@ $(function() {
       local.set({currentTab: index});
     }
   });
-  $('#countCurrency').on('keyup', function(e) {
+  $('#countCurrency').on('keyup mouseup', function(e) {
     let target = e.target;
     console.info(target);
     // lo.createNotify('aaaa' + lo.price)
