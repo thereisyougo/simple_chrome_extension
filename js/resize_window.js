@@ -1,7 +1,8 @@
 const local = chrome.storage.local;
 const tabs = [];
 // var translateCurrencyUrl = 'https://query.yahooapis.com/v1/public/yql?q=SELECT%20*%20FROM%20yahoo.finance.xchange%20where%20pair%20%3D%20%27{{ fromCurrency }}{{ toCurrency }}%27&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&diagnostics=false&format=xml';
-var translateCurrencyUrl = 'http://api.fixer.io/latest?base={{ fromCurrency }}&symbols={{ toCurrency }}';
+// var translateCurrencyUrl = 'http://apilayer.net/api/live?access_key=759c23e4d2bf7557a0ed4eb5d4692bdc&source={{ fromCurrency }}&currencies={{ toCurrency }}&format=0';
+var translateCurrencyUrl = 'http://free.currencyconverterapi.com/api/v5/convert?q={{ fromCurrency }}_{{ toCurrency }}&compact=y';
 
 
 document.addEventListener('click', function(e) {
@@ -46,16 +47,26 @@ document.addEventListener('click', function(e) {
     case 'storage':
     case 'nodedist':
     case 'bravo':
+    case 'disableExtensions':
+    case 'enableExtensions':
+    case 'disableKaba':
+    case 'enableKaba':
       lo[target.id](target.dataset);
     default:
       //lo.createNotify('no function');
   }
 });
 
-
+const kabaExtensionId = 'ganjnhaighehkjnnlmaikllkkiejibfe';
 
 const lo = {
   empty() {},
+  disableKaba() {
+    chrome.management.setEnabled(kabaExtensionId, false, function() {});
+  },
+  enableKaba() {
+    chrome.management.setEnabled(kabaExtensionId, true, function() {});
+  },
   bravo() {
     chrome.runtime.sendMessage(_.assign({id: 'download_bravo_images'}, arguments[0]), function(response) {});
   },
@@ -141,6 +152,40 @@ const lo = {
       $('#marks_content').val(JSON.stringify(extensionInfos));
     });
   },
+  disableExtensions() {
+    chrome.management.getAll(function(extensionInfos) {
+      chrome.management.getSelf(function(selfExtension) {
+        if (extensionInfos.length === 1 && extensionInfos[0].id === selfExtension.id)
+          return;
+        let existExtenstions = extensionInfos.filter(function(ext) {
+          return ext.id !== selfExtension.id && ext.enabled;
+        }).map(function(ext) {
+          return ext.id;
+        });
+        existExtenstions.forEach(function(id) {
+          chrome.management.setEnabled(id, false, function() {
+            console.info(`extension:${id} has been disabled`);
+          });
+        });
+        local.set({
+          disabledExtension: JSON.stringify(existExtenstions)
+        })
+      });
+    });
+  },
+  enableExtensions() {
+    local.get('disabledExtension', function(data) {
+      let existExtenstions = JSON.parse(data.disabledExtension);
+      existExtenstions.forEach(function(id) {
+        chrome.management.setEnabled(id, true, function() {
+          console.info(`extension:${id} has been enabled`);
+        });
+      });
+      local.set({
+        disabledExtension: '[]'
+      })
+    })
+  },
   gotoOptions() {
     if (chrome.runtime.openOptionsPage) {
       // New way to open options pages, if supported (Chrome 42+).
@@ -175,8 +220,12 @@ const lo = {
       if (Number(currentCount) > 0) {
         let r = Number($('#resultCurrency').val());
         $('#resultCurrency').val((Number(currentCount) * r).toFixed(4));
+      }
+      if (!data || !data.quotes || Object.keys(data.quotes).length === 0) {
+        lo.createNotify('response data corrupted!' + JSON.stringify(data))
+        return;
       }*/
-      let rate = data.rates[toCurrency];
+      let rate = Object.values(data)[0].val;
       lo.price = Number(rate)
       $('#resultCurrency').val(rate);
       let currentCount = $('#countCurrency').val();
