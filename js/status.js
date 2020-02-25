@@ -75,6 +75,12 @@ function createMenu() {
         type: 'normal'
     });
     chrome.contextMenus.create({
+        id: 'transbyoxford',
+        title: '使用Oxford查询',
+        contexts: ['selection'],
+        type: 'normal'
+    });
+    chrome.contextMenus.create({
         id: 'transbyyoudao',
         title: '使用YouDao解释',
         contexts: ['selection'],
@@ -375,6 +381,9 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
     } else if (info.menuItemId === 'transbycambridge') {
         let text = info.selectionText;
         window.open(`https://dictionary.cambridge.org/dictionary/english-chinese-simplified/${text}`, '_blank');
+    } else if (info.menuItemId === 'transbyoxford') {
+        let text = info.selectionText;
+        window.open(`https://www.oxfordlearnersdictionaries.com/definition/english/${text}`, '_blank');
     } else if (info.menuItemId === 'transbyyoudao') {
         let text = info.selectionText;
         window.open(`http://dict.youdao.com/w/${text}`, '_blank');
@@ -415,7 +424,7 @@ chrome.notifications.onButtonClicked.addListener(function(notificationId, button
 });
 
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
-    console.info(msg);
+    // console.info(msg);
     if (msg.id) {
         switch (msg.id) {
             case 'transbygoo':
