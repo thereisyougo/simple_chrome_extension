@@ -21,38 +21,42 @@ document.addEventListener('click', function(e) {
     case 'toCurrency':
       lo.focus.call(target);
       break;
-    case 'resizeBtn':
-    case 'closeTab':
-    case 'changeTitle':
-    case 'changeBadge':
-    case 'popupNotify':
-    case 'showMarks':
-    case 'searchMark':
-    case 'getCookies':
-    case 'removeCookies':
-    case 'searchHistory':
-    case 'removeHistory':
-    case 'changeDirection':
-    case 'translateCurrency':
-    case 'gotoOptions':
-    case 'extensionsInfo':
-    case 'extensionInfo':
-    case 'enableExtension':
-    case 'uninstallExtension':
-    case 'duplicateTab':
-    case 'gotoYahoo':
-    case 'alarm':
-    case 'cpu':
-    case 'memory':
-    case 'storage':
-    case 'nodedist':
-    case 'bravo':
-    case 'disableExtensions':
-    case 'enableExtensions':
-    case 'disableKaba':
-    case 'enableKaba':
-      lo[target.id](target.dataset);
+    // case 'resizeBtn':
+    // case 'closeTab':
+    // case 'changeTitle':
+    // case 'changeBadge':
+    // case 'popupNotify':
+    // case 'showMarks':
+    // case 'searchMark':
+    // case 'getCookies':
+    // case 'removeCookies':
+    // case 'searchHistory':
+    // case 'removeHistory':
+    // case 'changeDirection':
+    // case 'translateCurrency':
+    // case 'gotoOptions':
+    // case 'extensionsInfo':
+    // case 'extensionInfo':
+    // case 'enableExtension':
+    // case 'uninstallExtension':
+    // case 'duplicateTab':
+    // case 'gotoYahoo':
+    // case 'alarm':
+    // case 'cpu':
+    // case 'memory':
+    // case 'storage':
+    // case 'nodedist':
+    // case 'bravo':
+    // case 'disableExtensions':
+    // case 'enableExtensions':
+    // case 'disableKaba':
+    // case 'enableKaba':
     default:
+      try {
+        lo[target.id](target.dataset);
+      } catch(e) {
+        // alert(e.toString() + ":" + target.id);
+      }
       //lo.createNotify('no function');
   }
 });
@@ -408,6 +412,47 @@ const lo = {
       });
     });
   },
+  moveToFirst() {
+    chrome.windows.getCurrent({ populate: true }, function (w) {
+      let currentTab = w.tabs.find(function(t) {
+        return t.active;
+      });
+      if (currentTab) {
+        chrome.tabs.move(currentTab.id, { index: 0 });
+      }
+    });
+  },
+  moveToLast() {
+    chrome.windows.getCurrent({ populate: true }, function (w) {
+      let currentTab = w.tabs.find(function (t) {
+        return t.active;
+      });
+      if (currentTab) {
+        chrome.tabs.move(currentTab.id, { index: -1 });
+      }
+    });
+  },
+  moveToForward() {
+    chrome.windows.getCurrent({ populate: true }, function (w) {
+      let currentTab = w.tabs.find(function (t) {
+        return t.active;
+      });
+      if (currentTab) {
+        chrome.tabs.move(currentTab.id, { index: currentTab.index - 1 });
+      }
+    });
+  },
+  moveToBackward() {
+    chrome.windows.getCurrent({ populate: true }, function (w) {
+      let currentTab = w.tabs.find(function (t) {
+        return t.active;
+      });
+      if (currentTab) {
+        
+        chrome.tabs.move(currentTab.id, { index: currentTab.index === w.tabs.length - 1 ? 0 : currentTab.index + 1 });
+      }
+    });
+  },
   firstTab() {
     chrome.windows.getCurrent({ populate: true }, function(w) {
       chrome.tabs.update(w.tabs[0].id, {
@@ -473,7 +518,7 @@ const lo = {
     let dateString = d.toISOString();
     return dateString.substring(0, dateString.length - 8);
   },
-  createNotify(msg, title = chrome.i18n.getMessage('hint'), contextMessage) {
+  createNotify(msg, title = chrome.i18n.getMessage('hint'), contextMessage = '') {
     chrome.notifications.create('sampleNotify' + increCount(), {
       iconUrl: 'images/ic_star_border_black_48dp_1x.png',
       title: title,

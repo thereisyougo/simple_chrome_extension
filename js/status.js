@@ -552,14 +552,17 @@ chrome.omnibox.onInputChanged.addListener(function(text, suggest) {
         updateAmount(text, suggests);
     }
     suggests.push({
+        content: `https://dictionary.cambridge.org/dictionary/english-chinese-simplified/${text}`,
+        description: `Cambridge Dictionary Word: <match>${text}</match>`
+    }, {
+        content: `https://www.oxfordlearnersdictionaries.com/definition/english/${text}`,
+        description: `Oxford Learners Dictionary: <match>${text}</match>`
+    }, {
         content: `https://cdict.net/q/${text}`,
         description: `Query Word: <match>${text}</match>`
     }, {
         content: `http://dict.youdao.com/w/${text}`,
         description: `YouDao Query Word: <match>${text}</match>`
-    }, {
-        content: `https://dictionary.cambridge.org/dictionary/english-chinese-simplified/${text}`,
-        description: `Cambridge Dictionary Word: <match>${text}</match>`
     }, {
         content: `http://man.he.net/?topic=${text}&section=all`,
         description: `Linux manual about: <match>${text}</match>`
