@@ -432,6 +432,26 @@ const lo = {
       }
     });
   },
+  frontTab() {
+    chrome.windows.getCurrent({ populate: true }, function (w) {
+      let currentTabIdx = w.tabs.findIndex(function (t) {
+        return t.active;
+      });
+      let adjustIdx = currentTabIdx === 0 ? w.tabs.length - 1 : currentTabIdx - 1;
+
+      chrome.tabs.update(w.tabs[adjustIdx].id, {active: true}, function() {});
+    });
+  },
+  nextTab() {
+    chrome.windows.getCurrent({ populate: true }, function (w) {
+      let currentTabIdx = w.tabs.findIndex(function (t) {
+        return t.active;
+      });
+      let adjustIdx = currentTabIdx === w.tabs.length - 1 ? 0 : currentTabIdx + 1;
+
+      chrome.tabs.update(w.tabs[adjustIdx].id, {active: true}, function() {});
+    });
+  },
   moveToForward() {
     chrome.windows.getCurrent({ populate: true }, function (w) {
       let currentTab = w.tabs.find(function (t) {
