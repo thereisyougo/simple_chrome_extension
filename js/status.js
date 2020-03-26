@@ -548,6 +548,21 @@ chrome.omnibox.onInputChanged.addListener(function(text, suggest) {
             content: `https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/${text.substring(4)}`,
             description: 'MOZ JAVASCRIPT DOC'
         });
+    } else if (text.startsWith('ciu:')) {
+        suggests.push({
+            content: `https://caniuse.com/#search=${text.substring(4)}`,
+            description: 'CAN I USE DOC'
+        });
+    } else if (text.startsWith('npm:')) {
+        suggests.push({
+            content: `https://www.npmjs.com/search?q=${text.substring(4)}`,
+            description: 'CAN I USE DOC'
+        });
+    } else if (text.startsWith('pkg:')) {
+        suggests.push({
+            content: `https://www.unpkg.com/${text.substring(4)}`,
+            description: 'JAVASCRIPT PACKAGE DOWNLOAD'
+        });
     } else if (!isNaN(text)) {
         updateAmount(text, suggests);
     }
