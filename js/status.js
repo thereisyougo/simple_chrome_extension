@@ -588,14 +588,21 @@ chrome.omnibox.onInputChanged.addListener(function(text, suggest) {
 
 chrome.omnibox.onInputEntered.addListener(function(text, onInputEnteredDisposition) {
     // "currentTab", "newForegroundTab", or "newBackgroundTab"
-    console.info(text, onInputEnteredDisposition);
+
+    // console.info(text, currentTab);
     chrome.tabs.query({
         active: true
     }, function(tabs) {
         if (tabs.length > 0) {
-            chrome.tabs.update(tabs[0].id, {
-                url: text
-            });
+            if (text.startsWith('http')) {
+                chrome.tabs.update(tabs[0].id, {
+                    url: text
+                });
+            } else {
+                chrome.tabs.update(tabs[0].id, {
+                    url: `https://dictionary.cambridge.org/dictionary/english-chinese-simplified/${text}`
+                });
+            }
         }
     });
 });
