@@ -594,15 +594,17 @@ chrome.omnibox.onInputEntered.addListener(function(text, onInputEnteredDispositi
         active: true
     }, function(tabs) {
         if (tabs.length > 0) {
+            let url = '';
             if (text.startsWith('http')) {
-                chrome.tabs.update(tabs[0].id, {
-                    url: text
-                });
+                url = text;
+            } else if (text.startsWith('moz:')) {
+                url = 'https://developer.mozilla.org/zh-CN/docs/Web'
             } else {
-                chrome.tabs.update(tabs[0].id, {
-                    url: `https://dictionary.cambridge.org/dictionary/english-chinese-simplified/${text}`
-                });
+                url = `https://dictionary.cambridge.org/dictionary/english-chinese-simplified/${text}`
             }
+            chrome.tabs.update(tabs[0].id, {
+                url: url
+            });
         }
     });
 });
