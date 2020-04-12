@@ -132,12 +132,19 @@ const lo = {
       })
     }
   },
+  enableExt(extensionId, enabled) {
+    if (!_.isEmpty(extensionId)) {
+      chrome.management.setEnabled(extensionId, enabled, function() {
+        $('#extinfo span').filter(function(_, el) {
+          return el.dataset.id === extensionId;
+        }).css('color', enabled ? 'green' : 'red');
+      });
+    }
+  },
   enableExtension() {
     let extensionId = $('#extensionId').val();
     let enabled = $('#whetherEnable').prop('checked');
-    if (!_.isEmpty(extensionId)) {
-      chrome.management.setEnabled(extensionId, enabled, function() {});
-    }
+    this.enableExt(extensionId, enabled);
   },
   extensionInfo() {
     let extensionId = $('#extensionId').val();
@@ -152,8 +159,36 @@ const lo = {
     }
   },
   extensionsInfo() {
+    let self = this;
     chrome.management.getAll(function(extensionInfos) {
-      $('#marks_content').val(JSON.stringify(extensionInfos));
+      // $('#marks_content').val(JSON.stringify(extensionInfos));
+      let str = '';
+      $('#extinfo p').off('click');
+      extensionInfos.sort(function(a, b) {
+        if (a.enabled === b.enabled) {
+          return 0;
+        } else if (a.enabled && !b.enabled) {
+          return -1;
+        } else {
+          return 1;
+        }
+      }).forEach(function(item) {
+        str += `<p><input type="checkbox" data-id="${item.id}" ${item.enabled?'checked':''}><span data-id="${item.id}" style="color:${item.enabled?'green':'red'}">${item.name}</span></p>`;
+      });
+
+      $('#extinfo').addClass('hasInfo').html(str);
+
+      setTimeout(function() {
+        $('#extinfo p').on('click', function(e) {
+          let el = e.target;
+          if (el.nodeName === 'SPAN') {
+            $('#extensionId').val(el.dataset.id);
+          } else if (el.nodeName === 'INPUT') {
+            self.enableExt(el.dataset.id, $(el).prop('checked'));
+          }
+        });
+      }, 100);
+
     });
   },
   disableExtensions() {
@@ -360,6 +395,13 @@ const lo = {
       $('#marks_content').val(JSON.stringify(array));
     });
   },
+  showTopSites() {
+    chrome.topSites.get(function(items) {
+      $('#marks_content').val(JSON.stringify(items.map(i => {
+        return {url: i.url, title: i.title};
+      })));
+    });
+  },
   popupNotify() {
     chrome.runtime.sendMessage({id: 'popupNotify'});
   },
@@ -490,6 +532,11 @@ const lo = {
         active: true,
       });
     });
+  },
+  capMedia() {
+    chrome.desktopCapture.chooseDesktopMedia(["screen"], function(stream_id, options) {
+      console.log(stream_id, options);
+    })
   },
   closeTab() {
     let matchUrl = document.getElementById('matchUrl').value;
@@ -669,7 +716,11 @@ var increCount = (function() {
   };
 })();
 
-
+document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('unload', function() {
+    $('#extinfo p').off('click');
+  });
+});
 //jpgmnamnpadjhlgacaemfcfgdonjdjnl
 //chrome-extension://jpgmnamnpadjhlgacaemfcfgdonjdjnl/popup.html
 //chrome-extension://oimcnnhpjpepmhonikdllcleijcnfben/popup.html

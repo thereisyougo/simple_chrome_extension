@@ -3,7 +3,7 @@
 <head>
     <style>
     body {
-        width: 250px;
+        width: 280px;
     }
     
     .as-button {
@@ -30,7 +30,7 @@
     .subtab {
         background-color: #fafafa;
         box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .26);
-        text-shadow: 
+        /* text-shadow:  */
         padding: 3px 3px;
         display: none;
     }
@@ -48,6 +48,16 @@
     }
     #currentSize:hover:after{
         content: ']';
+    }
+    #marks_content, #extinfo {
+        width: 100%;
+    }
+    .hasInfo {
+        height: 5rem;
+        overflow: scroll;
+    }
+    #extinfo span {
+        cursor: pointer;
     }
     </style>
     <script src="js/jquery.min.js"></script>
@@ -78,6 +88,8 @@
             <br>
             <input type="button" value="FRONT_TAB" id="frontTab">
             <input type="button" value="NEXT_TAB" id="nextTab">
+            <br>
+            <input type="button" value="CAP_TEST" id="capMedia">
             <br> URL*:
             <input id="matchUrl" placeholder="Match Patterns">
             <br>
@@ -104,6 +116,7 @@
         <div class="subtab" id="tab2">
             <textarea rows="7" id="marks_content"></textarea>
             <input type="button" value="Show Marks" id="showMarks">
+            <input type="button" value="Show Top Sites" id="showTopSites">
             <br>
             <input id="markKeyword" placeholder="Keyword in URL or Title">
             <br>
@@ -123,6 +136,8 @@
             <br>
             <input type="button" value="Search History" id="searchHistory">
             <input type="button" value="Remove Searched History" id="removeHistory">
+            <br>
+            <div id="extinfo"></div>
             <input type="button" value="All Extensions Info" id="extensionsInfo"><br>
             <input id="extensionId" placeholder="Extension ID or Empty for this Ex"><input type="button" value="Extension Info" id="extensionInfo"><br>
             <input type="button" id="uninstallExtension" value="Uninstall Extension By ID"><br>
