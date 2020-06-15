@@ -401,7 +401,7 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
             if (lastIndex === 0) return;
             let absolute = false;
             let direction = propName.startsWith('f') ? -1 : propName.endsWith('first') ? (absolute = true, 0) : propName.endsWith('last') ? (absolute = true, lastIndex) : 1;
-            chrome.tabs.query({ active: true }, function(tabs) {
+            chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
                 let tab = tabs[0];
                 if (tab.index === lastIndex && direction === 1) return;
                 if (tab.index === 0 && direction === -1) return;
@@ -591,7 +591,8 @@ chrome.omnibox.onInputEntered.addListener(function(text, onInputEnteredDispositi
 
     // console.info(text, currentTab);
     chrome.tabs.query({
-        active: true
+        active: true,
+        currentWindow: true
     }, function(tabs) {
         if (tabs.length > 0) {
             let url = '';

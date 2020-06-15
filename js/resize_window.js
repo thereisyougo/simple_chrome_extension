@@ -105,7 +105,7 @@ const lo = {
     chrome.runtime.sendMessage({id: 'gotoYahoo', params: {c1:fromCurrency, c2: toCurrency}});
   },
   duplicateTab() {
-    chrome.tabs.query({active: true}, function(tabs) {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       // if (tabs.length === 0) return;
       chrome.windows.getCurrent({populate: true}, function(win) {
         let activeTabs = tabs.map(t=>t.id);
@@ -331,7 +331,7 @@ const lo = {
     })));
   },
   removeCookies() {
-    chrome.tabs.query({active: true}, function(tabs) {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       if (tabs.length === 0) return;
       chrome.cookies.getAll(lo.queryCookieCondition(tabs[0].url), function(cookies) {
         let array = [];
@@ -349,7 +349,7 @@ const lo = {
     })
   },
   getCookies() {
-    chrome.tabs.query({active: true}, function(tabs) {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       if (tabs.length === 0) return;
       chrome.cookies.getAll(lo.queryCookieCondition(tabs[0].url), function(cookies) {
         $('#marks_content').val(JSON.stringify(cookies));
