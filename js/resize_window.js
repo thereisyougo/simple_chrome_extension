@@ -62,6 +62,7 @@ document.addEventListener('click', function(e) {
 });
 
 const kabaExtensionId = 'ganjnhaighehkjnnlmaikllkkiejibfe';
+const proxyEntensionId = 'padekgcemlokbadohgkifijomclgjgif';
 
 const lo = {
   empty() {},
@@ -70,6 +71,12 @@ const lo = {
   },
   enableKaba() {
     chrome.management.setEnabled(kabaExtensionId, true, function() {});
+  },
+  disableProxy() {
+    chrome.management.setEnabled(proxyEntensionId, false, function() {});
+  },
+  enableProxy() {
+    chrome.management.setEnabled(proxyEntensionId, true, function() {});
   },
   bravo() {
     chrome.runtime.sendMessage(_.assign({id: 'download_bravo_images'}, arguments[0]), function(response) {});
