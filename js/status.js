@@ -212,6 +212,39 @@ function activeAlarm(name, alarmInfo) {
     // chrome.alarms.create(name, alarmInfo);
 }
 
+function downloadChrome(arch) {
+    // 
+
+    let newTabId;
+
+    function myListener(tabId, info, tab) {
+        if (tab.status === 'complete' && tabId === newTabId) {
+            chrome.tabs.executeScript(tabId, {
+                code: `
+                (function() {
+                    document.querySelector('.chr-homepage-hero__download > button ~ div div.channel-win64-stable.show input').checked = false;
+                    document.querySelector('.chr-homepage-hero__download > button').click();
+                    return '';
+                })();
+                `
+            }, function(empty) {
+                setTimeout(function() {
+                    chrome.tabs.remove(newTabId);
+                }, 1000);
+            });
+            chrome.tabs.onUpdated.removeListener(myListener);
+        }
+    }
+
+    chrome.tabs.onUpdated.addListener(myListener);
+    chrome.tabs.create({
+        url: 'https://www.google.com/intl/en/chrome/browser/desktop/index.html?standalone=1',
+        active: false
+    }, function(tab) {
+        newTabId = tab.id;
+    });
+}
+
 function downloadNode(arch) {
     var newTabId;
 
@@ -461,6 +494,9 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                 break;
             case 'download_bravo_images':
                 downloadBravoImages();
+                break;
+            case 'download_chrome':
+                downloadChrome();
                 break;
         }
     }

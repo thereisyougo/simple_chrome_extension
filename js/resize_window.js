@@ -79,10 +79,13 @@ const lo = {
     chrome.management.setEnabled(proxyEntensionId, true, function() {});
   },
   bravo() {
-    chrome.runtime.sendMessage(_.assign({id: 'download_bravo_images'}, arguments[0]), function(response) {});
+    chrome.runtime.sendMessage(Object.assign({id: 'download_bravo_images'}, arguments[0]), function(response) {});
   },
   nodedist() {
-    chrome.runtime.sendMessage(_.assign({id: 'download_node'}, arguments[0]), function(response) {});
+    chrome.runtime.sendMessage(Object.assign({id: 'download_node'}, arguments[0]), function(response) {});
+  },
+  chromedist() {
+    chrome.runtime.sendMessage(Object.assign({id: 'download_chrome'}, arguments[0]), function(response) {});
   },
   memory() {
     chrome.runtime.sendMessage({id: 'memory'}, function(response) {
