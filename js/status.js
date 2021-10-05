@@ -1,3 +1,5 @@
+const self = this;
+
 var increCount = (function() {
     let count = 0;
     return function() {
@@ -5,18 +7,29 @@ var increCount = (function() {
     };
 })();
 
+function camelCase(element) {
+  let term = element.toLowerCase();
+  let newTerm = "";
+  let upper = false;
+  for (let i = 0; i < term.length; i++) {
+    const c = term[i];
+    if (c === "_") {
+      upper = true;
+      continue;
+    }
+    newTerm += String.fromCodePoint(c.codePointAt(0) ^ (upper ? 32 : 0));
+    upper = false;
+  }
+  return newTerm;
+}
+
 function httpRequest(url, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            callback(xhr);
-        }
-    }
-    xhr.onerror = function() {
-        callback(false);
-    }
-    xhr.send();
+  return fetch(url, {
+    method: "GET",
+  })
+    .then((body) => body.text())
+    .then(callback)
+    .catch(callback);
 }
 
 function parseXML(data) {
@@ -212,6 +225,36 @@ function activeAlarm(name, alarmInfo) {
     // chrome.alarms.create(name, alarmInfo);
 }
 
+function downloadGolang(arch) {
+
+    let newtabid;
+
+    function mylistener(tabId, info, tab) {
+        if (tab.status === 'complete' && tabId === newtabid) {
+            chrome.tabs.executeScript(tabId, {
+                code: `(function() {
+                    const onelink = [].filter.call(document.links, link => link.classList.contains('download') && link.classList.contains('downloadBox') && link.href.includes('windows-amd64'));
+                    onelink[0].click();
+                    return '';
+                })()`
+            }, function(empty) {
+                setTimeout(function() {
+                    chrome.tabs.remove(newtabid);
+                }, 1000);
+            });
+            chrome.tabs.onUpdated.removeListener(mylistener);
+        }
+    }
+
+    chrome.tabs.onUpdated.addListener(mylistener);
+    chrome.tabs.create({
+        url: 'https://golang.google.cn/dl/#stable',
+        active: false
+    }, function(tab) {
+        newtabid = tab.id;
+    });
+}
+
 function downloadChrome(arch) {
     // 
 
@@ -264,7 +307,7 @@ function downloadNode(arch) {
                     url: result[0],
                     conflictAction: 'overwrite'
                 }, function(downloadId) {
-                    console.info(downloadId);
+                    chrome.downloads.show(downloadId);
                 });
                 chrome.tabs.remove(tabId);
             });
@@ -498,6 +541,8 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
             case 'download_chrome':
                 downloadChrome();
                 break;
+            default:
+                self[camelCase(msg.id)](msg);
         }
     }
 });
@@ -524,7 +569,7 @@ var price;
           price = Number(doc.rates.CNY);
         //console.info(price);
     });
-})();
+})//();
 
 function gotoYahoo({ c1, c2 }) {
     chrome.tabs.create({

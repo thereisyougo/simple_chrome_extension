@@ -87,6 +87,9 @@ const lo = {
   chromedist() {
     chrome.runtime.sendMessage(Object.assign({id: 'download_chrome'}, arguments[0]), function(response) {});
   },
+  golangdist() {
+    chrome.runtime.sendMessage(Object.assign({id: 'download_golang'}, arguments[0]), function(response) {});
+  },
   memory() {
     chrome.runtime.sendMessage({id: 'memory'}, function(response) {
       lo.createNotify3({obj: response});
