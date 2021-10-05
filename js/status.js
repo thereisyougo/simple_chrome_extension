@@ -5,41 +5,52 @@ var increCount = (function() {
     };
 })();
 
-function httpRequest(url, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            callback(xhr);
+function camelCase(element) {
+    let term = element.toLowerCase()
+    let newTerm = '';
+    let upper = false;
+    for (let i = 0; i < term.length; i++) {
+        const c = term[i];
+        if (c === '_') {
+            upper = true;
+            continue;
         }
+        newTerm += String.fromCodePoint(c.codePointAt(0) ^ (upper ? 32 : 0))
+        upper = false;
     }
-    xhr.onerror = function() {
-        callback(false);
-    }
-    xhr.send();
+    return newTerm;
 }
 
-function parseXML(data) {
-    var xml;
-    if (!data || typeof data !== "string") {
-        return null;
-    }
-    try {
-        if (window.DOMParser) { // Standard
-            xml = (new window.DOMParser()).parseFromString(data, "text/xml");
-        } else { // IE
-            xml = new window.ActiveXObject("Microsoft.XMLDOM");
-            xml.async = "false";
-            xml.loadXML(data);
-        }
-    } catch (e) {
-        xml = undefined;
-    }
-    if (!xml || !xml.documentElement || xml.getElementsByTagName("parsererror").length) {
-        console.info("Invalid XML: " + data);
-    }
-    return xml;
-};
+function httpRequest(url, callback) {
+
+    return fetch(url, {
+        method: 'GET'
+    }).then(body => body.text())
+    .then(callback)
+    .catch(callback);
+}
+
+// function parseXML(data) {
+//     var xml;
+//     if (!data || typeof data !== "string") {
+//         return null;
+//     }
+//     try {
+//         if (window.DOMParser) { // Standard
+//             xml = (new window.DOMParser()).parseFromString(data, "text/xml");
+//         } else { // IE
+//             xml = new window.ActiveXObject("Microsoft.XMLDOM");
+//             xml.async = "false";
+//             xml.loadXML(data);
+//         }
+//     } catch (e) {
+//         xml = undefined;
+//     }
+//     if (!xml || !xml.documentElement || xml.getElementsByTagName("parsererror").length) {
+//         console.info("Invalid XML: " + data);
+//     }
+//     return xml;
+// };
 
 function createMenu() {
 
@@ -212,6 +223,37 @@ function activeAlarm(name, alarmInfo) {
     // chrome.alarms.create(name, alarmInfo);
 }
 
+function downloadGolang(arch) {
+
+    let newTabId;
+
+    function myListener(tabId, info, tab) {
+        if (tab.status === 'complete' && tabId === newTabId) {
+            chrome.scripting.executeScript({
+                target: {tabId, tabId},
+                func: function() {
+                    const onelink = [].filter.call(document.links, link => link.classList.contains('download') && link.classList.contains('downloadBox') && link.href.includes('windows-amd64'));
+                    onelink[0].click();
+                    return '';
+                }
+            }, function(empty) {
+                setTimeout(function() {
+                    chrome.tabs.remove(newTabId);
+                }, 1000);
+            });
+            chrome.tabs.onUpdated.removeListener(myListener);
+        }
+    }
+
+    chrome.tabs.onUpdated.addListener(myListener);
+    chrome.tabs.create({
+        url: 'https://golang.google.cn/dl/#stable',
+        active: false
+    }, function(tab) {
+        newTabId = tab.id;
+    });
+}
+
 function downloadChrome(arch) {
     // 
 
@@ -219,14 +261,13 @@ function downloadChrome(arch) {
 
     function myListener(tabId, info, tab) {
         if (tab.status === 'complete' && tabId === newTabId) {
-            chrome.tabs.executeScript(tabId, {
-                code: `
-                (function() {
+            chrome.scripting.executeScript({
+                target: {tabId, tabId},
+                func: function() {
                     document.querySelector('.chr-homepage-hero__download > button ~ div div.channel-win64-stable.show input').checked = false;
                     document.querySelector('.chr-homepage-hero__download > button').click();
                     return '';
-                })();
-                `
+                }
             }, function(empty) {
                 setTimeout(function() {
                     chrome.tabs.remove(newTabId);
@@ -245,8 +286,9 @@ function downloadChrome(arch) {
     });
 }
 
-function downloadNode(arch) {
-    var newTabId;
+function downloadNode(msgObj) {
+    let arch = msgObj.arch;
+    let newTabId;
 
     function myListener2(tabId, info, tab) {
         if (tab.status === 'complete' && tabId === newTabId) {
@@ -255,11 +297,17 @@ function downloadNode(arch) {
             if (archStr.startsWith('mac')) {
                 pattern = (this.version + archStr.substring(3)).replace('.', '\\.') + '$';
             }
-            console.info(pattern);
-            chrome.tabs.executeScript(tabId, {
-                code: `[].map.call(document.links, it=>it.href).filter(item=>/${pattern}/.test(item))`
+            console.info(pattern, Date.now());
+            chrome.scripting.executeScript({
+                target: {tabId, tabId},
+                func: function(pattern) {
+                    return [].map.call(document.links, it=>it.href).filter(item=>new RegExp(pattern).test(item));
+                },
+                args: [pattern]
             }, function(results) {
-                let result = results[0];
+                
+                let result = results[0].result;
+                console.info(result, Date.now())
                 chrome.downloads.download({
                     url: result[0],
                     conflictAction: 'overwrite'
@@ -274,11 +322,14 @@ function downloadNode(arch) {
 
     function myListener(tabId, info, tab) {
         if (tab.status === 'complete' && tabId === newTabId) {
-            chrome.tabs.executeScript(tabId, {
-                code: '[].map.call(document.links, it=>it.href)'
+            chrome.scripting.executeScript({
+                target: {tabId, tabId},
+                func: function() {
+                    return [].map.call(document.links, it=>it.href);
+                }
             }, function(results) {
                 //console.info(results);
-                let allversions = results[0].filter(link => /v[0-9\.]+\/$/.test(link)).map(function(link) {
+                let allversions = results[0].result.filter(link => /v[0-9\.]+\/$/.test(link)).map(function(link) {
                     return link.match(/v[0-9\.]+/)[0].substring(1);
                 }).sort(function(a, b) {
                     let x = a.split(/\./),
@@ -286,10 +337,17 @@ function downloadNode(arch) {
                     return y[0] - x[0] || y[1] - x[1] || y[2] - x[2]
                 });
                 let latestVersion = allversions[0];
-                chrome.tabs.executeScript(tabId, {
-                    code: `[].filter.call(document.links, it=>new RegExp("v${latestVersion}").test(it.href)).map(link=>link.href)`
+                chrome.scripting.executeScript({
+                    target: {tabId: tabId, allFrames: true},
+                    func: function(latestVersion) {
+                        console.info('document.links:' + latestVersion)
+                        return [].filter.call(document.links, it=>it.href.includes(`v${latestVersion}`)).map(link=>link.href);
+                    },
+                    args: [latestVersion]
                 }, function(rs) {
-                    let result = rs[0];
+                    console.info(rs);
+                    let result = rs[0].result;
+                    
                     chrome.tabs.onUpdated.addListener(myListener2.bind({ version: latestVersion }));
                     chrome.tabs.update(tabId, {
                         url: result[0]
@@ -311,48 +369,58 @@ function downloadNode(arch) {
 }
 
 function downloadBravoImages() {
-    chrome.tabs.executeScript({
-        code: '[].map.call(document.querySelectorAll(".thumb_box"), function(el){ return [].map.call(el.querySelectorAll("a"), function(link){ return link.href; }); }).reduce(function(a,b) { return a.concat(b) })'
-    }, function(results) {
-        function myListener(tabId, info, tab) {
-            if (tab.status === 'complete' && allTabs.includes(tabId)) {
-                chrome.tabs.executeScript(tabId, {
-                    code: 'document.images[0].src'
-                }, function(results) {
-                    if (results.length) {
-                        chrome.downloads.download({
-                            url: results[0],
-                            conflictAction: 'uniquify'
-                        }, function(downloadId) {
-                            console.info(downloadId);
-                            chrome.tabs.remove(tabId);
-                        });
-                    }
-                    console.info(results[0]);
-                });
-                counter--;
-                if (counter === 0)
-                    chrome.tabs.onUpdated.removeListener(myListener);
+    chrome.tabs.getCurrent(function(tab) {
+
+
+        chrome.scripting.executeScript({
+            target: {tabId: tab.id},
+            func: function() {
+                return [].map.call(document.querySelectorAll(".thumb_box"), function(el){ return [].map.call(el.querySelectorAll("a"), function(link){ return link.href; }); }).reduce(function(a,b) { return a.concat(b) });
             }
-        }
-        if (results.length) {
-
-            let pages = results[0],
-                counter = pages.length;
-            let allTabs = [];
-
-            chrome.tabs.onUpdated.addListener(myListener);
-
-            pages.forEach(function(pageUrl) {
-                chrome.tabs.create({
-                    url: pageUrl,
-                    active: false
-                }, function(tab) {
-                    allTabs.push(tab.id);
+        }, function(results) {
+            function myListener(tabId, info, tab) {
+                if (tab.status === 'complete' && allTabs.includes(tabId)) {
+                    chrome.scripting.executeScript({
+                        target: {tabId, tabId},
+                        func: function() {
+                            return document.images[0].src;
+                        }
+                    }, function(results) {
+                        if (results.length) {
+                            chrome.downloads.download({
+                                url: results[0].result,
+                                conflictAction: 'uniquify'
+                            }, function(downloadId) {
+                                console.info(downloadId);
+                                chrome.tabs.remove(tabId);
+                            });
+                        }
+                        console.info(results[0]);
+                    });
+                    counter--;
+                    if (counter === 0)
+                        chrome.tabs.onUpdated.removeListener(myListener);
+                }
+            }
+            if (results.length) {
+    
+                let pages = results[0].result,
+                    counter = pages.length;
+                let allTabs = [];
+    
+                chrome.tabs.onUpdated.addListener(myListener);
+    
+                pages.forEach(function(pageUrl) {
+                    chrome.tabs.create({
+                        url: pageUrl,
+                        active: false
+                    }, function(tab) {
+                        allTabs.push(tab.id);
+                    });
                 });
-            });
-        }
-    })
+            }
+        })
+    });
 }
 
 
@@ -410,16 +478,24 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
     //console.info(tab);
     if (info.menuItemId === 'transbygoo') {
         var url = 'http://translate.google.com.hk/#auto/zh-CN/' + info.selectionText;
-        window.open(url, '_blank');
+        chrome.tabs.create({
+            url: url
+        });
     } else if (info.menuItemId === 'transbycambridge') {
         let text = info.selectionText;
-        window.open(`https://dictionary.cambridge.org/dictionary/english-chinese-simplified/${text}`, '_blank');
+        chrome.tabs.create({
+            url: `https://dictionary.cambridge.org/dictionary/english-chinese-simplified/${text}`
+        });
     } else if (info.menuItemId === 'transbyoxford') {
         let text = info.selectionText;
-        window.open(`https://www.oxfordlearnersdictionaries.com/definition/english/${text}`, '_blank');
+        chrome.tabs.create({
+            url: `https://www.oxfordlearnersdictionaries.com/definition/english/${text}`
+        });
     } else if (info.menuItemId === 'transbyyoudao') {
         let text = info.selectionText;
-        window.open(`http://dict.youdao.com/w/${text}`, '_blank');
+        chrome.tabs.create({
+            url: `http://dict.youdao.com/w/${text}`
+        });
     } else if (info.parentMenuItemId === 'tabChangeMenu') {
         let propName = info.menuItemId.substring(4);
         chrome.tabs.update({
@@ -489,18 +565,23 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
                     sendResponse(info);
                 });
                 return true;
-            case 'download_node':
-                downloadNode(msg.arch);
-                break;
-            case 'download_bravo_images':
-                downloadBravoImages();
-                break;
-            case 'download_chrome':
-                downloadChrome();
-                break;
+            // case 'download_node':
+            //     console.info(msg, '---');
+            //     downloadNode(msg.arch);
+            //     break;
+            // case 'download_bravo_images':
+            //     downloadBravoImages();
+            //     break;
+            // case 'download_chrome':
+            //     downloadChrome();
+            //     break;
+            default:
+                globalThis[camelCase(msg.id)](msg);
         }
     }
 });
+
+
 
 /*chrome.omnibox.setDefaultSuggestion({
   description: '<match>%s</match>'
@@ -519,7 +600,7 @@ var price;
         var rate = doc.querySelector('Rate');
         price = Number(rate.textContent);
         console.info(price);*/
-        var doc = JSON.parse(r.responseText);
+        var doc = JSON.parse(r);
         if (doc && doc.rates && 'CNY' in doc.rates)
           price = Number(doc.rates.CNY);
         //console.info(price);
@@ -564,6 +645,7 @@ chrome.omnibox.onInputStarted.addListener(function() {
     console.info('started.');
 
 });
+
 
 chrome.omnibox.onInputChanged.addListener(function(text, suggest) {
     // suggest([]SuggestResult)
@@ -668,3 +750,6 @@ chrome.management.onDisabled.addListener(function(exInfo) {
 /*chrome.alarms.onAlarm.addListener(function(alarm) {
     console.log('Alarm info ', alarm);
 });*/
+
+// DOMParser
+

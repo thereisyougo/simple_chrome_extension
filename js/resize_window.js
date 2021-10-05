@@ -21,36 +21,6 @@ document.addEventListener('click', function(e) {
     case 'toCurrency':
       lo.focus.call(target);
       break;
-    // case 'resizeBtn':
-    // case 'closeTab':
-    // case 'changeTitle':
-    // case 'changeBadge':
-    // case 'popupNotify':
-    // case 'showMarks':
-    // case 'searchMark':
-    // case 'getCookies':
-    // case 'removeCookies':
-    // case 'searchHistory':
-    // case 'removeHistory':
-    // case 'changeDirection':
-    // case 'translateCurrency':
-    // case 'gotoOptions':
-    // case 'extensionsInfo':
-    // case 'extensionInfo':
-    // case 'enableExtension':
-    // case 'uninstallExtension':
-    // case 'duplicateTab':
-    // case 'gotoYahoo':
-    // case 'alarm':
-    // case 'cpu':
-    // case 'memory':
-    // case 'storage':
-    // case 'nodedist':
-    // case 'bravo':
-    // case 'disableExtensions':
-    // case 'enableExtensions':
-    // case 'disableKaba':
-    // case 'enableKaba':
     default:
       try {
         lo[target.id](target.dataset);
@@ -86,6 +56,9 @@ const lo = {
   },
   chromedist() {
     chrome.runtime.sendMessage(Object.assign({id: 'download_chrome'}, arguments[0]), function(response) {});
+  },
+  golangdist() {
+    chrome.runtime.sendMessage(Object.assign({id: 'download_golang'}, arguments[0]), function(response) {})
   },
   memory() {
     chrome.runtime.sendMessage({id: 'memory'}, function(response) {
