@@ -575,7 +575,8 @@ function gotoYahoo({ c1, c2 }) {
     chrome.tabs.create({
         // windowId
         // index
-        url: `http://finance.yahoo.com/q?s=${c1}${c2}=X`,
+        url: `https://www.oanda.com/currency-converter/en/?from=${c1}&to=${c2}&amount=1#`,
+        // url: `http://finance.yahoo.com/q?s=${c1}${c2}=X`,
         // active: true
         // pinned: false
         // openerTabId
