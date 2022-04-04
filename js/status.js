@@ -265,7 +265,7 @@ function downloadChrome(arch) {
             chrome.tabs.executeScript(tabId, {
                 code: `
                 (function() {
-                    document.querySelector('.chr-homepage-hero__download > button ~ div div.channel-win64-stable.show input').checked = false;
+                    document.querySelector('.chr-homepage-hero__download > button ~ div div.chr-checkbox input').checked = false;
                     document.querySelector('.chr-homepage-hero__download > button').click();
                     return '';
                 })();
@@ -281,7 +281,7 @@ function downloadChrome(arch) {
 
     chrome.tabs.onUpdated.addListener(myListener);
     chrome.tabs.create({
-        url: 'https://www.google.com/intl/en/chrome/browser/desktop/index.html?standalone=1',
+        url: 'https://www.google.cn/chrome/?standalone=1',
         active: false
     }, function(tab) {
         newTabId = tab.id;
