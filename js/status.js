@@ -94,6 +94,12 @@ function createMenu() {
         type: 'normal'
     });
     chrome.contextMenus.create({
+        id: 'transbywebster',
+        title: '使用Webster查询',
+        contexts: ['selection'],
+        type: 'normal'
+    });
+    chrome.contextMenus.create({
         id: 'transbyyoudao',
         title: '使用YouDao解释',
         contexts: ['selection'],
@@ -460,6 +466,9 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
     } else if (info.menuItemId === 'transbyoxford') {
         let text = info.selectionText;
         window.open(`https://www.oxfordlearnersdictionaries.com/definition/english/${text}`, '_blank');
+    } else if (info.menuItemId === 'transbywebster') {
+        let text = info.selectionText;
+        window.open(`https://www.merriam-webster.com/dictionary/${text}`, '_blank');
     } else if (info.menuItemId === 'transbyyoudao') {
         let text = info.selectionText;
         window.open(`http://dict.youdao.com/w/${text}`, '_blank');
